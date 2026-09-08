@@ -178,7 +178,7 @@ outputs
 *.xml
 *.part
 *.svg
-*.pdf
+# *.pdf
 
 *.code-workspace
 launch_scripts/
