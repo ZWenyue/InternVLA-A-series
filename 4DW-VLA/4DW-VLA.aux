@@ -1,0 +1,121 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\citation{rt1,rt2,chi2023diffusion,zhao2023act,kim2024openvla,black2024pi0}
+\citation{rt2,kim2024openvla,black2024pi0,liu2024rdt,internvla15}
+\citation{xie2024decomposing}
+\citation{octo,oneill2024oxe}
+\citation{ha2018worldmodels,levy2026simdist,nvidia2026wam,lawam2026}
+\citation{internvla15,nvidia2026wam,dreaming2026}
+\@writefile{toc}{\contentsline {section}{\numberline {I}Introduction}{1}{section.1}\protected@file@percent }
+\newlabel{sec:intro}{{I}{1}{Introduction}{section.1}{}}
+\citation{fourdwam2026}
+\citation{chen2025robotwin2}
+\citation{internvla15,lingbot2026}
+\citation{walke2023bridge,khazatsky2024droid,vuong2023oxe}
+\citation{rt2,kim2024openvla,black2024pi0,liu2024rdt}
+\citation{rt2}
+\citation{kim2024openvla}
+\citation{chi2023diffusion}
+\citation{liu2024rdt}
+\citation{black2024pi0}
+\citation{internvla15}
+\citation{lingbot2026}
+\citation{ze2024dp3,shridhar2022peract,yang2025fp3,gervet2023act3d}
+\citation{ze2024dp3}
+\citation{yang2025fp3}
+\citation{geopredict2026}
+\citation{elan4d2026}
+\citation{pri4r2026}
+\citation{motionvla2026}
+\citation{fourdwam2026}
+\citation{ha2018worldmodels,levy2026simdist,hansen2024tdmpc2}
+\citation{levy2026simdist}
+\citation{nvidia2026wam,lawam2026,dreaming2026,wamsurvey2026}
+\citation{nvidia2026wam,dreaming2026}
+\citation{lawam2026}
+\@writefile{toc}{\contentsline {section}{\numberline {II}Related Work}{2}{section.2}\protected@file@percent }
+\newlabel{sec:related}{{II}{2}{Related Work}{section.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-A}}Foundation Models in Robotics}{2}{subsection.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-B}}3D and 4D Representations for Manipulation}{2}{subsection.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-C}}World Models and World-Action Models}{2}{subsection.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {III}Method}{2}{section.3}\protected@file@percent }
+\newlabel{sec:method}{{III}{2}{Method}{section.3}{}}
+\citation{elan4d2026}
+\citation{internvla15}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-A}}Problem Formulation}{3}{subsection.3.1}\protected@file@percent }
+\newlabel{eq:policy}{{1}{3}{Problem Formulation}{equation.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-B}}Embodiment-Centric 4D Keypoint Trajectories}{3}{subsection.3.2}\protected@file@percent }
+\newlabel{eq:fk}{{2}{3}{Embodiment-Centric 4D Keypoint Trajectories}{equation.2}{}}
+\newlabel{eq:loss4d}{{3}{3}{Embodiment-Centric 4D Keypoint Trajectories}{equation.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-C}}Distilled Visual Foresight from Observation, Instruction, and State}{3}{subsection.3.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-D}}Heterogeneous Multimodal Fusion}{3}{subsection.3.4}\protected@file@percent }
+\newlabel{sec:fusion}{{\mbox  {III-D}}{3}{Heterogeneous Multimodal Fusion}{subsection.3.4}{}}
+\citation{nvidia2026wam,internvla15}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces \textbf  {4DW-VLA architecture.} A frozen VLM prefix encodes multi-view RGB and the language instruction. A dedicated \textbf  {4D keypoint expert} takes robot state $q_t$ and a history of FK-derived 4D keypoint tracks $X_t$ as input and predicts future 4D keypoint tracks $X_{t+1:t+H}$; the \textbf  {action expert} attends to the VLM prefix and to the 4D keypoint expert's output to predict the action chunk $A_t$. A frozen video world model, conditioned on the same multi-view RGB, supervises the shared representation during training only. At deployment the world model is dropped, but the 4D keypoint expert is retained and continues to condition the action expert on metric 4D structure.}}{4}{figure.caption.1}\protected@file@percent }
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{fig:overview}{{1}{4}{\textbf {4DW-VLA architecture.} A frozen VLM prefix encodes multi-view RGB and the language instruction. A dedicated \textbf {4D keypoint expert} takes robot state $q_t$ and a history of FK-derived 4D keypoint tracks $X_t$ as input and predicts future 4D keypoint tracks $X_{t+1:t+H}$; the \textbf {action expert} attends to the VLM prefix and to the 4D keypoint expert's output to predict the action chunk $A_t$. A frozen video world model, conditioned on the same multi-view RGB, supervises the shared representation during training only. At deployment the world model is dropped, but the 4D keypoint expert is retained and continues to condition the action expert on metric 4D structure}{figure.caption.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-E}}Multi-Task Objective and Staged Warmup}{4}{subsection.3.5}\protected@file@percent }
+\newlabel{eq:loss}{{4}{4}{Multi-Task Objective and Staged Warmup}{equation.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-F}}Inference: Action Prediction Only}{4}{subsection.3.6}\protected@file@percent }
+\citation{chen2025robotwin2}
+\citation{chen2025robotwin2}
+\citation{internvla15}
+\citation{lingbot2026}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces \textbf  {Block-causal attention mask.} Rows are query blocks, columns are key blocks; light cells are attended, dark cells are masked. The VLM prefix attends causally only to itself. The keypoint expert (proprioceptive state, history keypoints, and future-keypoint queries) attends to the prefix and to itself. The action expert (learnable foresight tokens and action queries) attends to the prefix, the keypoint expert, and itself, the only block with access to all three streams.}}{5}{figure.caption.2}\protected@file@percent }
+\newlabel{fig:mask}{{2}{5}{\textbf {Block-causal attention mask.} Rows are query blocks, columns are key blocks; light cells are attended, dark cells are masked. The VLM prefix attends causally only to itself. The keypoint expert (proprioceptive state, history keypoints, and future-keypoint queries) attends to the prefix and to itself. The action expert (learnable foresight tokens and action queries) attends to the prefix, the keypoint expert, and itself, the only block with access to all three streams}{figure.caption.2}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {IV}Experiments}{5}{section.4}\protected@file@percent }
+\newlabel{sec:experiments}{{IV}{5}{Experiments}{section.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-A}}Experimental Setup}{5}{subsection.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-B}}Main Results}{5}{subsection.4.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {I}{\ignorespaces \textbf  {Post-training success rates (\%) on RoboTwin~2.0.} Easy = \texttt  {demo\_clean}; Hard = \texttt  {demo\_randomized} (OOD). Bold is best in each column. LingBot-VLA~2.0 was not evaluated on \texttt  {scan\_object} or \texttt  {place\_bread\_skillet}.}}{6}{table.caption.3}\protected@file@percent }
+\newlabel{tab:main}{{I}{6}{\textbf {Post-training success rates (\%) on RoboTwin~2.0.} Easy = \texttt {demo\_clean}; Hard = \texttt {demo\_randomized} (OOD). Bold is best in each column. LingBot-VLA~2.0 was not evaluated on \texttt {scan\_object} or \texttt {place\_bread\_skillet}}{table.caption.3}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces \textbf  {RoboTwin~2.0 success rates.} Grouped bars for Easy and Hard (OOD) on three tasks. LingBot-VLA~2.0 is not evaluated on \texttt  {scan\_object} or \texttt  {place\_bread\_skillet} (n/a). All three methods use the reported 76-epoch post-training schedule.}}{6}{figure.caption.5}\protected@file@percent }
+\newlabel{fig:results}{{3}{6}{\textbf {RoboTwin~2.0 success rates.} Grouped bars for Easy and Hard (OOD) on three tasks. LingBot-VLA~2.0 is not evaluated on \texttt {scan\_object} or \texttt {place\_bread\_skillet} (n/a). All three methods use the reported 76-epoch post-training schedule}{figure.caption.5}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {II}{\ignorespaces \textbf  {4DW-VLA post-training recipe.}}}{6}{table.caption.4}\protected@file@percent }
+\newlabel{tab:recipe}{{II}{6}{\textbf {4DW-VLA post-training recipe.}}{table.caption.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-C}}What the Numbers Do and Do Not Show}{6}{subsection.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-D}}Real-Robot Validation (In Progress)}{6}{subsection.4.4}\protected@file@percent }
+\newlabel{sec:realrobot}{{\mbox  {IV-D}}{6}{Real-Robot Validation (In Progress)}{subsection.4.4}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {V}Limitations}{6}{section.5}\protected@file@percent }
+\newlabel{sec:limitations}{{V}{6}{Limitations}{section.5}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {III}{\ignorespaces \textbf  {Real-robot validation protocol (results pending).}}}{6}{table.caption.6}\protected@file@percent }
+\newlabel{tab:realrobot}{{III}{6}{\textbf {Real-robot validation protocol (results pending).}}{table.caption.6}{}}
+\bibstyle{plainnat}
+\bibdata{references}
+\bibcite{black2024pi0}{{1}{2024}{{Black et~al.}}{{}}}
+\bibcite{rt1}{{2}{2023{}}{{Brohan et~al.}}{{Brohan, Brown, Carbajal, et~al.}}}
+\bibcite{rt2}{{3}{2023{}}{{Brohan et~al.}}{{Brohan, Brown, Carbajal, et~al.}}}
+\bibcite{chen2025robotwin2}{{4}{2025}{{Chen et~al.}}{{}}}
+\bibcite{chi2023diffusion}{{5}{2023}{{Chi et~al.}}{{Chi, Feng, Du, Xu, Cousineau, Burchfiel, and Song}}}
+\bibcite{gervet2023act3d}{{6}{2023}{{Gervet et~al.}}{{}}}
+\bibcite{ha2018worldmodels}{{7}{2018}{{Ha and Schmidhuber}}{{}}}
+\bibcite{hansen2024tdmpc2}{{8}{2024}{{Hansen et~al.}}{{Hansen, Su, and Wang}}}
+\bibcite{internvla15}{{9}{2026}{{InternVLA-A1.5 Team}}{{}}}
+\bibcite{khazatsky2024droid}{{10}{2024}{{Khazatsky et~al.}}{{}}}
+\bibcite{kim2024openvla}{{11}{2024}{{Kim et~al.}}{{}}}
+\bibcite{levy2026simdist}{{12}{2026}{{Levy et~al.}}{{}}}
+\bibcite{liu2024rdt}{{13}{2024}{{Liu et~al.}}{{}}}
+\bibcite{nvidia2026wam}{{14}{2026}{{NVIDIA}}{{}}}
+\bibcite{octo}{{15}{2024}{{{Octo Model Team} et~al.}}{{}}}
+\bibcite{oneill2024oxe}{{16}{2024}{{O'Neill et~al.}}{{}}}
+\bibcite{dreaming2026}{{17}{2026{}}{{others}}{{}}}
+\bibcite{elan4d2026}{{18}{2026{}}{{others}}{{}}}
+\bibcite{fourdwam2026}{{19}{2026{}}{{others}}{{}}}
+\bibcite{geopredict2026}{{20}{2026{}}{{others}}{{}}}
+\bibcite{lawam2026}{{21}{2026{}}{{others}}{{}}}
+\bibcite{motionvla2026}{{22}{2026{}}{{others}}{{}}}
+\bibcite{pri4r2026}{{23}{2026{}}{{others}}{{}}}
+\bibcite{wamsurvey2026}{{24}{2026{}}{{others}}{{}}}
+\bibcite{lingbot2026}{{25}{2026}{{Robbyant}}{{}}}
+\bibcite{shridhar2022peract}{{26}{2022}{{Shridhar et~al.}}{{Shridhar, Manuelli, and Fox}}}
+\bibcite{vuong2023oxe}{{27}{2023}{{Vuong et~al.}}{{}}}
+\@writefile{toc}{\contentsline {section}{\numberline {VI}Conclusion}{7}{section.6}\protected@file@percent }
+\newlabel{sec:conclusion}{{VI}{7}{Conclusion}{section.6}{}}
+\bibcite{walke2023bridge}{{28}{2023}{{Walke et~al.}}{{}}}
+\bibcite{xie2024decomposing}{{29}{2024}{{Xie et~al.}}{{}}}
+\bibcite{yang2025fp3}{{30}{2025}{{Yang et~al.}}{{Yang, Chen, Wen, and Gao}}}
+\bibcite{ze2024dp3}{{31}{2024}{{Ze et~al.}}{{}}}
+\bibcite{zhao2023act}{{32}{2023}{{Zhao et~al.}}{{Zhao, Kumar, Levine, and Finn}}}
+\gdef \@abspage@last{8}

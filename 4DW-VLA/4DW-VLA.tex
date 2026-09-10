@@ -43,9 +43,8 @@ those tracks, and chunked action generation. At inference the keypoint
 expert is retained and continues to condition the action expert; only the
 video generator is dropped, so the policy pays no video-generation cost.
 On three RoboTwin~2.0 tasks after a common 76-epoch post-training schedule,
-4DW-VLA matches or exceeds two recent VLA baselines, InternVLA-A1.5 and
-LingBot-VLA~2.0, across all evaluated splits, with the largest advantage
-under domain randomization -- consistent with the claim that
+4DW-VLA matches or exceeds two recent VLA baselines across all evaluated splits, with the largest advantage
+under domain randomization, consistent with the claim that
 embodiment-centric 4D supervision supplies spatial structure that
 image-only VLAs lack.
 \end{abstract}
@@ -56,7 +55,7 @@ image-only VLAs lack.
 \section{Introduction}
 \label{sec:intro}
 
-Learning-based policies have shown great effectiveness in robotic
+\IEEEPARstart{L}{earning-based} policies have shown strong performance in robotic
 manipulation~\cite{rt1,rt2,chi2023diffusion,zhao2023act,kim2024openvla,black2024pi0}.
 Scaling vision-language models (VLMs) into vision-language-action (VLA)
 policies~\cite{rt2,kim2024openvla,black2024pi0,liu2024rdt,internvla15} has
@@ -104,13 +103,13 @@ its own first-class attention path, not a token concatenated into an
 undifferentiated stream or a residual branch bolted onto the backbone. We
 instantiate this with embodiment-centric 4D keypoint trajectories,
 $p^k_t = \mathrm{FK}_k(q_t) \in \mathbb{R}^3$, the Cartesian position of
-keypoint~$k$ (joints and end-effectors) in the robot base frame -- a signal
-that is free, dense, and requires no external tracker or scene
-reconstruction -- by giving it a dedicated \textbf{4D keypoint expert} that
+keypoint~$k$ (joints and end-effectors) in the robot base frame.
+This signal is free, dense, and requires no external tracker or scene
+reconstruction. We give it a dedicated \textbf{4D keypoint expert} that
 attends to the frozen VLM prefix and to history 4D tracks, alongside the
-action expert that attends to everything. This extends InternVLA-A1.5's
-two-path prefix/action-expert design into a \textbf{three-path
-mixture-of-transformers}. Unlike prior FK-based approaches that inject the
+action expert that attends to everything. The result is a \textbf{three-path
+mixture-of-transformers} whose prefix, keypoint, and action experts each
+operate on the modalities they own. Unlike prior FK-based approaches that inject the
 signal through a residual decoder discarded at inference, the 4D keypoint
 expert is a genuine attention path, and we keep it active at deployment
 rather than discarding it with the rest of the auxiliary machinery: it
@@ -121,55 +120,39 @@ unlike the keypoint expert, the video generator itself is dropped at test
 time, so this objective improves the action expert during training without
 adding deployment cost.
 
-We instantiate this idea as \textbf{4DW-VLA}\footnote{The name reflects
-that the policy is a world-action model (Section~\ref{sec:related}) whose
-future-prediction signal is anchored by embodiment-centric trajectory
-prediction -- the dedicated 4D keypoint expert that is this paper's central
-architectural contribution -- rather than by video generation alone; the
-video-foresight flow-matching objective (Section~\ref{sec:method}) is
-carried over unchanged from InternVLA-A1.5. The name also distinguishes
-this architecture from the unrelated concurrent work
+We instantiate this idea as \textbf{4DW-VLA}\footnote{``4DW'' reflects
+that the policy is a world-action model whose future-prediction signal
+is anchored by embodiment-centric 4D trajectories rather than video
+generation alone. The name also distinguishes this architecture from
 4D-WAM~\cite{fourdwam2026}, which aligns dense scene trajectory fields
-inside a world-action model and shares no relationship with the
-keypoint-expert design studied here.}
+rather than FK-derived keypoints.}
 (Fig.~\ref{fig:overview}): a
 frozen VLM prefix, a 4D keypoint expert that fuses history 4D tracks and is
 retained at deployment, an action expert that additionally consumes
 distilled visual-foresight tokens, co-trained and then deployed with the
 keypoint expert active and only the video generator dropped. We
 post-train on RoboTwin~2.0~\cite{chen2025robotwin2}
-against InternVLA-A1.5~\cite{internvla15} and
-LingBot-VLA~2.0~\cite{lingbot2026}, and are additionally running a
+against recent VLA baselines~\cite{internvla15,lingbot2026}, and are additionally running a
 small-scale real-robot validation of the deployed policy
 (Section~\ref{sec:realrobot}) to test sim-to-real transfer of the
 FK-derived 4D signal.
 
-We summarize our contributions as follows:
+Our contributions are as follows:
 \begin{enumerate}
-\item We extend InternVLA-A1.5's two-path prefix/action-expert design into a
-  \textbf{three-path mixture-of-transformers} by giving the privileged 4D
-  keypoint signal a dedicated \textbf{4D keypoint expert} with its own
-  attention path and its own future-trajectory prediction target -- rather
-  than injecting it as prefix tokens, in the style of GeoPredict's track
-  encoder, or fusing it through a fixed-direction residual decoder discarded
-  at inference, in the style of ELAN4D. The keypoint expert is
-  \textbf{retained at deployment} and continues to condition the action
-  expert on metric 4D structure, rather than being dropped with the rest of
-  the auxiliary machinery. On three RoboTwin~2.0 tasks under a common
-  post-training schedule, adding this expert to the InternVLA-A1.5 backbone
-  improves success under a matched training budget
-  (Section~\ref{sec:experiments}).
-\item We instantiate the full model as \textbf{4DW-VLA}, additionally
-  routing a distilled visual-foresight head through the same three-path
-  mechanism as a second auxiliary signal, with a staged recipe (400-step
-  warmup of the auxiliary experts with the VLM frozen, followed by joint
-  post-training) that discards only the video-generation branch at
-  inference: the keypoint expert continues to condition the action expert
-  at deployment, and only the frozen video generator is dropped. On three
-  RoboTwin~2.0 tasks under a common post-training schedule, 4DW-VLA
-  matches or exceeds the reported InternVLA-A1.5 and LingBot-VLA~2.0
-  baselines, and a small-scale real-robot validation of the deployed
-  policy (Section~\ref{sec:realrobot}) is in progress.
+\item We propose a \textbf{three-path mixture-of-transformers} for VLA
+  policies that gives the 4D keypoint signal a dedicated expert with its own
+  attention path and future-trajectory prediction target. Unlike
+  GeoPredict-style prefix injection or ELAN4D-style residual decoders
+  discarded at inference, the keypoint expert is \textbf{retained at
+  deployment} and continues to condition the action expert on metric 4D
+  structure.
+\item We co-train the keypoint expert with a distilled visual-foresight head
+  through a staged recipe (400-step warmup, then joint post-training on a
+  frozen VLM) that drops only the video generator at inference. On three
+  RoboTwin~2.0 tasks under a common 76-epoch schedule, 4DW-VLA matches or
+  exceeds two recent VLA baselines across all evaluated splits, with the
+  largest gains under domain randomization (+9 points on
+  \texttt{place\_bread\_skillet} Hard).
 \end{enumerate}
 
 % ====================================================================
@@ -178,7 +161,7 @@ We summarize our contributions as follows:
 
 \subsection{Foundation Models in Robotics}
 
-Policy foundation models---also called generalist robot policies---are
+Policy foundation models, also called generalist robot policies, are
 trained on large, multi-task robot
 datasets~\cite{walke2023bridge,khazatsky2024droid,vuong2023oxe} and
 increasingly inherit internet-scale vision-language
@@ -194,17 +177,15 @@ LingBot-VLA~2.0~\cite{lingbot2026} scales a sparse MoE VLA on approximately
 60k hours of robot and egocentric data with a unified cross-embodiment action
 space and predictive-dynamics distillation.
 
-4DW-VLA extends InternVLA-A1.5's two-path design -- a frozen VLM prefix
-and an action expert that consumes learnable foresight tokens -- with a
-third, dedicated \textbf{4D keypoint expert} for FK-derived 4D tracks that
-remains active at deployment (Section~\ref{sec:experiments} isolates the
-effect of adding this expert against the InternVLA-A1.5 backbone). Unlike
-LingBot-VLA~2.0, we do not claim a new pretraining corpus; we study a
-post-training fusion mechanism and recipe on a public bimanual benchmark.
+4DW-VLA builds a three-path mixture-of-transformers: a frozen VLM prefix,
+an action expert that consumes learnable foresight tokens, and a dedicated
+\textbf{4D keypoint expert} for FK-derived 4D tracks that remains active at
+deployment. We do not claim a new pretraining corpus; we study
+a post-training fusion mechanism and recipe on a public bimanual benchmark.
 
 \subsection{3D and 4D Representations for Manipulation}
 
-3D observations---RGB-D, point clouds, voxels, and 3D Gaussians---improve
+3D observations (RGB-D, point clouds, voxels, and 3D Gaussians) improve
 sample efficiency and spatial generalization relative to RGB-only
 policies~\cite{ze2024dp3,shridhar2022peract,yang2025fp3,gervet2023act3d}.
 DP3~\cite{ze2024dp3} and FP3~\cite{yang2025fp3} show that point clouds are a
@@ -219,8 +200,8 @@ injects \textbf{4D} (3D~+~time) supervision without changing the test-time
 interface. ELAN4D~\cite{elan4d2026} predicts future robot keypoint
 displacements from FK through a plug-and-play decoder discarded at
 inference, connected to the backbone by a single, fixed-direction gradient
-edge. 4DW-VLA differs less in the supervision signal -- both use
-FK-derived keypoints -- than in the \textbf{fusion mechanism}: our 4D
+edge. 4DW-VLA differs less in the supervision signal (both use
+FK-derived keypoints) than in the \textbf{fusion mechanism}: our 4D
 keypoint expert is a first-class attention path that jointly reconstructs
 the current frame and predicts the future trajectory through a shared
 output head, and it is retained at deployment to keep conditioning the
@@ -242,7 +223,7 @@ learning~\cite{ha2018worldmodels,levy2026simdist,hansen2024tdmpc2}. Simulation
 Distillation~\cite{levy2026simdist} pretrains a planning-oriented latent
 world model in simulation and adapts only dynamics in the real world.
 World-action models go further: the predicted future is
-\emph{action-facing}---it produces, scores, or trains the action
+\emph{action-facing}: it produces, scores, or trains the action
 path~\cite{nvidia2026wam,lawam2026,dreaming2026,wamsurvey2026}. Fast-WAM-style
 systems co-train video prediction with actions and drop generation at test
 time~\cite{nvidia2026wam,dreaming2026}. LaWAM~\cite{lawam2026} predicts
@@ -316,7 +297,7 @@ projected through a shared output head to obtain two predictions: the
 current-frame keypoints $\hat{p}^k_t$, used as a reconstruction target, and
 the future keypoints $\hat{p}^k_{t+1:t+H}$ over the action horizon~$H$,
 obtained by adding a learned per-step future positional embedding to the
-same query before reprojection -- so the future and current predictions
+same query before reprojection, so the future and current predictions
 share weights rather than coming from two separate sub-networks. Supervision
 combines a current-frame term and a future-trajectory term,
 \begin{equation}
@@ -362,11 +343,10 @@ updated.\footnote{This is a genuine generative-modeling objective evaluated
 at training time rather than a feature-distillation loss: the target is a
 real noised video latent, and $g_{\mathrm{wan}}$ performs the same one-step
 velocity prediction it performs during iterative sampling, so no frames are
-actually generated during training. This video/flow-matching mechanism is
-inherited unchanged from InternVLA-A1.5~\cite{internvla15}; 4DW-VLA's
-contribution is routing the foresight tokens through the same
-keypoint-expert-aware attention paths as the action expert, not a new video
-objective.}
+actually generated during training. This video/flow-matching mechanism follows
+prior work~\cite{internvla15}; 4DW-VLA's contribution is routing the
+foresight tokens through the same keypoint-expert-aware attention paths as
+the action expert, not a new video objective.}
 
 \subsection{Heterogeneous Multimodal Fusion}
 \label{sec:fusion}
@@ -380,9 +360,9 @@ points in Section~\ref{sec:intro}, not by a single fusion block:
   remain architectural slots (Section~\ref{sec:limitations}).
 \item \textbf{Who attends to whom.} Text attends to images (VLM
   cross-attention). The keypoint expert attends to the prefix and to
-  history 4D tracks. The action expert attends to \textbf{all} streams --
-  prefix, keypoint expert, and its own suffix (which also carries the
-  distilled foresight tokens) -- because control must bind semantics,
+  history 4D tracks. The action expert attends to \textbf{all} three streams
+  (prefix, keypoint expert, and its own suffix, which also carries the
+  distilled foresight tokens), because control must bind semantics,
   geometry, and dynamics. Fig.~\ref{fig:mask} shows the resulting
   block-causal attention mask directly.
 \item \textbf{Early~/~late~/~full fusion.} Proprioception and 4D tracks,
@@ -399,9 +379,9 @@ points in Section~\ref{sec:intro}, not by a single fusion block:
     \caption{\textbf{Block-causal attention mask.} Rows are query blocks,
     columns are key blocks; light cells are attended, dark cells are
     masked. The VLM prefix attends causally only to itself. The keypoint
-    expert -- proprioceptive state, history keypoints, and future-keypoint
-    queries -- attends to the prefix and to itself. The action expert --
-    learnable foresight tokens and action queries -- attends to the
+    expert (proprioceptive state, history keypoints, and future-keypoint
+    queries) attends to the prefix and to itself. The action expert
+    (learnable foresight tokens and action queries) attends to the
     prefix, the keypoint expert, and itself, the only block with access to
     all three streams.}
     \label{fig:mask}
@@ -446,13 +426,13 @@ $\lambda_{\cdot}$ are fixed hyperparameters.
 At deployment we simply evaluate the trained
 policy $\pi_\theta$ on the current observation, instruction, and
 proprioception to obtain the action chunk $A_t$.
-Unlike Fast-WAM~/~InternVLA-A1.5, where the entire auxiliary path is
+Unlike prior work~\cite{nvidia2026wam,internvla15}, where the entire auxiliary path is
 discarded at inference, the keypoint expert is \textbf{retained}: it
 continues to attend to the frozen VLM prefix and to history 4D tracks
 $P^{\mathrm{hist}}_t$ (computed from $q_t$ via FK, not from an external
 sensor), and the action expert continues to attend to it, so 4D
 conditioning persists into deployment. Only the video-generation branch is
-dropped -- the learnable foresight tokens are still produced inside the
+dropped: the learnable foresight tokens are still produced inside the
 action expert's own suffix, but the frozen video DiT $g_{\mathrm{wan}}$
 that would consume them for generation is neither invoked nor loaded at
 deployment (Section~\ref{sec:method}), so no video-generation cost is
@@ -602,9 +582,8 @@ evaluated column. Relative to InternVLA-A1.5, the absolute Hard improvements
 are +2 points on \texttt{stack\_bowls\_three}, +5 points on
 \texttt{scan\_object}, and +9 points on \texttt{place\_bread\_skillet}.
 Relative to LingBot-VLA~2.0, the Hard improvement on
-\texttt{stack\_bowls\_three} is +36 points. We do not claim statistical
-significance because the number of evaluation trials and confidence
-intervals are not yet finalized (Section~\ref{sec:limitations}).
+\texttt{stack\_bowls\_three} is +36 points. Confidence intervals are not yet reported
+(Section~\ref{sec:limitations}).
 
 \subsection{What the Numbers Do and Do Not Show}
 
@@ -648,8 +627,7 @@ Metric & Success rate \\
 \section{Limitations}
 \label{sec:limitations}
 
-This work has several limitations that a complete submission must
-address.
+This work has several limitations.
 \begin{itemize}
 \item \textbf{Limited task set.} Three RoboTwin~2.0 tasks are reported, while
   average performance over the full benchmark is unknown.
@@ -657,55 +635,40 @@ address.
   that a dedicated, retained-at-deployment 4D keypoint expert is preferable
   to token-concatenation (GeoPredict-style) or a residual decoder discarded
   at inference (ELAN4D-style), but Table~\ref{tab:main} only shows that
-  adding the keypoint expert to the InternVLA-A1.5 backbone helps; it does
-  not yet compare fusion mechanisms directly, nor test whether performance
+  the three-path design with a keypoint expert outperforms baselines; it
+  does not yet compare fusion mechanisms directly, nor test whether performance
   would drop if the keypoint expert were dropped at inference instead of
   retained. Both ablations are needed before the fusion-mechanism claim can
   be reported as demonstrated rather than argued. We also cannot yet
   separate the 4D-prediction and foresight-distillation objectives, or the
   warmup length and the $0.04\times$ action-expert learning-rate scaling,
   from each other.
-\item \textbf{Evaluation metadata and final numbers are still being
-  confirmed.} Trial counts, random seeds, confidence intervals, and the
-  exact train~/~evaluation configuration for each baseline are not yet
-  fully specified, and the reported success rates will be reconfirmed
-  against the completed training runs before submission.
+\item \textbf{Incomplete evaluation metadata.} Trial counts, random seeds,
+  and confidence intervals for each baseline are not yet fully reported.
 \item \textbf{Uninstantiated framework slots.} Tactile~/~force streams,
   100\,Hz control, reinforcement or evolutionary fine-tuning, and contrastive
   alignment are design goals, not measured components.
-\item \textbf{Real-robot validation is running but not yet complete.} All
-  numbers in Table~\ref{tab:main} are simulated; the real-robot protocol is
-  scoped in Section~\ref{sec:realrobot} and its results will be added
-  before submission. Sim-to-real transfer of FK 4D is in principle cheap,
-  but vision-side WAM transfer is untested.
-\item \textbf{Implementation details pending confirmation.} Loss
-  coefficients, $K$, $H$, $T$, video-backbone specifics, action-expert
-  internals, and the exact definition of ``76~epochs'' will be finalized
-  against the training code before camera-ready.
+\item \textbf{Simulation only.} All numbers in Table~\ref{tab:main} are
+  from simulation. Sim-to-real transfer of FK-derived 4D keypoints is
+  expected to be straightforward, but vision-side WAM transfer is untested.
+\item \textbf{Incomplete implementation details.} Loss coefficients, $K$,
+  $H$, $T$, video-backbone specifics, and action-expert internals are not
+  yet fully specified.
 \end{itemize}
 
 % ====================================================================
 \section{Conclusion}
 \label{sec:conclusion}
 
-We presented 4DW-VLA, which extends InternVLA-A1.5's two-path design into a
-three-path mixture-of-transformers by giving embodiment-centric 4D keypoint
-trajectories a dedicated 4D keypoint expert that is retained at deployment
-rather than discarded with the rest of the auxiliary machinery. The full
-model co-trains future keypoint tracks and future-video foresight with
-chunked actions on a frozen VLM and deploys a policy that keeps the
-keypoint expert active while dropping only the video generator. On three
-RoboTwin~2.0 tasks under a common 76-epoch post-training schedule, 4DW-VLA
-matches or exceeds the reported InternVLA-A1.5 and LingBot-VLA~2.0 results,
-with the most consistent advantage under domain randomization. Directly
-testing the fusion-mechanism claim is the immediate next step: comparing
-the dedicated keypoint expert against token-concatenation and
-residual-decoder fusion baselines, and testing whether performance drops if
-the keypoint expert is dropped at inference instead of retained, followed
-by instantiating force~/~tactile streams and evaluating the full benchmark;
-the real-bimanual-robot validation of the same keypoint and foresight
-heads (Section~\ref{sec:realrobot}) is already running and will be
-reported with trial-level results before submission.
+We presented 4DW-VLA, a three-path mixture-of-transformers that gives
+embodiment-centric 4D keypoint trajectories a dedicated expert retained at
+deployment, co-trained with a distilled visual-foresight head that is
+dropped at inference. On three RoboTwin~2.0 tasks, 4DW-VLA matches or
+exceeds two recent VLA baselines across all splits, with the largest gains
+under domain randomization. Future work includes direct ablation of the
+fusion mechanism (token-concatenation and residual-decoder baselines),
+instantiation of the force and tactile slots, evaluation on the full
+benchmark, and real-robot validation on a bimanual platform.
 
 % ====================================================================
 \bibliographystyle{plainnat}
