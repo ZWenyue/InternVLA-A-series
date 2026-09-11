@@ -1,0 +1,318 @@
+% Shared body for ICRA and RAL versions. Figures: ../4DW-VLA/figures/
+
+\section{Introduction}
+\label{sec:intro}
+
+Learning-based manipulation policies and VLA models~\cite{rt1,rt2,chi2023diffusion,zhao2023act,kim2024openvla,black2024pi0} have improved language following and cross-task generalization, but they still under-represent the physical world in which a robot moves.
+
+\textbf{Most VLAs are fundamentally 2D.} They consume RGB images and language, yet manipulation unfolds in a 3D workspace; when time is included, the relevant object is \textbf{4D} structure---how 3D geometry changes across the action horizon. A policy that reasons only in image space lacks explicit metric body motion and cannot guarantee that predicted actions respect the robot's own spatial evolution.
+
+\textbf{3D-/4D-aware VLAs often pay a heavy geometric tax.} Point clouds, depth maps, voxel grids, and 3D Gaussian fields can improve spatial reasoning~\cite{ze2024dp3,yang2025fp3,gervet2023act3d}, but they typically require extra sensors or large perception networks to extract and encode geometry at every timestep. The resulting models are bigger, slower to train, and harder to deploy. Moreover, many 3D-enhanced designs treat geometry as a \textbf{static} per-frame cue and under-model \textbf{temporal} changes in the robot's own configuration.
+
+\textbf{Temporal prediction is usually misaligned across modalities.} Actions are inherently future-oriented: a policy outputs action chunks over horizon~$H$. Yet most VLAs do not jointly predict how \textbf{2D observations} and \textbf{3D/4D body state} should co-evolve over that horizon. World-model and world-action-model (WAM) lines predict future video~\cite{ha2018worldmodels,nvidia2026wam,lawam2026}, but often without explicit metric 4D body motion; the camera may ``imagine'' a future that is not consistent with the robot's actual 3D trajectory (e.g., the arm rises in joint space but the predicted video does not show the raised hand).
+
+\textbf{These signals should be coupled.} When a robot lifts its end-effector in 3D, the egocentric camera stream should reflect that motion; conversely, visual foresight should not contradict feasible body dynamics. Effective manipulation therefore requires \textbf{aligning} (a)~future \textbf{4D body motion} in the robot frame and (b)~future \textbf{2D video} the camera will see, and using both to predict (c)~future \textbf{actions}.
+
+We propose \textbf{4DW-VLA}---\textbf{4D and World-model aligned VLA}---to address the above gaps. Our design rests on three ideas:
+\begin{enumerate}
+\item \textbf{Low-cost 4D from FK.} Instead of reconstructing scene geometry from depth or point clouds, we compute 7D link trajectories (3D position + orientation) directly from proprioception via FK. This is essentially free at control rates and avoids the orders-of-magnitude overhead of perception-based 4D pipelines.
+\item \textbf{Unified Bidirectional Cross-Attention between 4D and 2D futures.} Two lightweight transformer experts---the \textbf{4D Future Expert} and the \textbf{World Knowledge Expert}---each maintain a temporal token sequence. At every timestep, a token attends causally within its own stream and to past tokens of the \textbf{other} stream, symmetrically coupling 4D body foresight and 2D visual foresight before action decoding.
+\item \textbf{Train with a large frozen world model; deploy without it.} The World Knowledge Expert produces compact \textbf{implicit 2D-foresight tokens} already aligned with 4D predictions. During training, these tokens condition a \textbf{frozen} large video diffusion world model; at inference the world model is \textbf{discarded}, so the deployable VLA stays small and fast while retaining distilled, 4D-aligned visual dynamics.
+\end{enumerate}
+
+Fig.~\ref{fig:overview} summarizes the architecture. We co-train four objectives---current 3D state estimation, future 4D prediction, future 2D foresight distillation, and action-chunk generation---under one weighted multi-task loss (Section~\ref{sec:training}). The video world model $g_{\mathrm{wm}}$ stays \textbf{frozen}; the VLM backbone is fine-tuned at \textbf{one-fifth} the learning rate of the expert and action heads over \textbf{10{,}000} optimizer steps.
+
+\textbf{Contributions:}
+\begin{enumerate}
+\item Formulation of \textbf{4D--2D--action alignment} for VLA manipulation (Section~\ref{sec:problem}).
+\item A \textbf{4D Future Expert} using \textbf{FK-derived 7D link trajectories} (Section~\ref{sec:4d}).
+\item \textbf{UBCA} between the 4D and World Knowledge experts (Section~\ref{sec:wk}).
+\item Distillation of a \textbf{frozen} video world model with \textbf{no deployment-time generation} (Sections~\ref{sec:wk}--\ref{sec:inference}).
+\item A \textbf{multi-task training objective} with tunable weights (Section~\ref{sec:training}).
+\end{enumerate}
+
+% ====================================================================
+\section{Related Work}
+\label{sec:related}
+
+\subsection{Foundation Models in Robotics}
+
+Generalist robot policies are trained on large multi-task datasets~\cite{walke2023bridge,khazatsky2024droid,vuong2023oxe} and increasingly built on vision-language priors~\cite{rt2,kim2024openvla,black2024pi0,liu2024rdt}. RT-2~\cite{rt2} and OpenVLA~\cite{kim2024openvla} cast actions as language-model tokens; Diffusion Policy~\cite{chi2023diffusion}, RDT~\cite{liu2024rdt}, and $\pi_0$~\cite{black2024pi0} generate continuous action chunks via diffusion or flow matching. These foundations excel at semantic generalization but largely treat observations as 2D images without explicit 4D body--video alignment.
+
+World-action models (WAMs) co-train video prediction with control~\cite{nvidia2026wam,lawam2026,dreaming2026}: the predicted future regularizes the action pathway, and generation is often dropped at test time. \textbf{4DW-VLA} follows the ``train with foresight, infer without the generator'' principle, but differs in \textbf{what} is aligned: we explicitly couple \textbf{FK-derived 4D body trajectories} with \textbf{2D video foresight} through bidirectional cross-attention before action decoding, rather than relying on video prediction alone.
+
+\subsection{3D and 4D Representations for Manipulation}
+
+A growing line injects 3D or 4D structure into manipulation policies and VLAs. These methods improve spatial and temporal reasoning, but the \textbf{4D signals they use are typically heavy}: they require extra sensing, large encoders, auxiliary foundation models, or scene-scale reconstruction, which inflates compute, memory, and model size. \textbf{4DW-VLA} deliberately avoids this tax by deriving 4D body motion from FK and distilling 2D dynamics into a small expert rather than embedding a full world model in the deployable policy.
+
+\textbf{RynnWorld-4D} (Alibaba DAMO Academy)~\cite{rynnworld4d2026} builds a tri-branch diffusion world model that co-generates future RGB, \textbf{depth}, and \textbf{optical flow} from RGB-D input, curates hundreds of millions of frames with pseudo depth/flow labels, and trains an inverse-dynamics policy on internal 4D latents---\textbf{infrastructure-heavy}. \textbf{4D-VLA}~\cite{fourdvla2025} injects sequential \textbf{RGB-D} frames with 3D coordinate embeddings into VLA pretraining; \textbf{depth must be available or estimated for every frame}. \textbf{Pri4R} (LG AI Research et al.)~\cite{pri4r2026} supervises VLMs with \textbf{privileged scene point tracks} from depth-based tracking---\textbf{expensive to obtain and encode}. \textbf{Lift3D-VLA}~\cite{lift3dvla2026} lifts VLAs with explicit \textbf{point clouds}, GC-MAE pretraining over reconstructed geometry, and layer-wise temporal action modeling---\textbf{substantial parameters and preprocessing}. \textbf{SpatialVLA}~\cite{spatialvla2025} integrates \textbf{monocular depth estimation} (ZoeDepth) into a 4B-scale VLA---a \textbf{permanent depth branch} at inference unless distilled away. \textbf{4D-WAM}~\cite{fourdwam2026} aligns WAMs with dense \textbf{pixel-level 3D trajectory fields} from a large 4D foundation teacher.
+
+In contrast, \textbf{4DW-VLA} obtains 4D through \textbf{FK on proprioception}---microseconds on CPU, no depth network, no point cloud---and aligns it to 2D foresight through \textbf{two small coupled experts}, using a frozen world model only as a \textbf{training-time teacher}. The deployable model excludes the teacher entirely.
+
+\subsection{World Models and World-Action Models}
+
+Classical world models predict future states for planning or representation learning~\cite{ha2018worldmodels,levy2026simdist,hansen2024tdmpc2}. Recent WAMs make the future \textbf{action-facing}~\cite{nvidia2026wam,wamsurvey2026}: video or latent subgoals regularize the policy~\cite{lawam2026,dreaming2026}. \textbf{4DW-VLA} contributes a complementary axis: the training signal is not only ``predict future pixels'' but \textbf{align future pixels with future FK 4D body motion} via bidirectional cross-attention, then condition actions on both distilled pathways. The large video model is frozen and removed at deployment, similar in spirit to fast WAM recipes but with explicit \textbf{4D--2D coupling}.
+
+% ====================================================================
+\section{Method}
+\label{sec:method}
+
+We present 4DW-VLA, a 4D and world-model aligned VLA for language-conditioned manipulation. A VLM encodes multi-view RGB and instructions; three trainable heads---a \textbf{4D Future Expert}, a \textbf{World Knowledge Expert}, and an \textbf{Action Expert}---cooperate through UBCA. Fig.~\ref{fig:overview} shows the overview.
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=\textwidth]{4dwvla_2.png}
+    \caption{\textbf{4DW-VLA overview.} A VLM prefix encodes RGB and language. The \textbf{4D Future Expert} predicts current and future FK 7D link trajectories from proprioception and 4D history. The \textbf{World Knowledge Expert} predicts implicit 2D-foresight tokens aligned with 4D through \textbf{Unified Bidirectional Cross-Attention}. A \textbf{frozen} video world model supervises 2D foresight during training only. The \textbf{Action Expert} consumes VLM tokens, both experts' outputs, and predicts action chunks. At inference, the world model is dropped; the VLM, two experts, and action head remain.}
+    \label{fig:overview}
+\end{figure*}
+
+\subsection{Problem Formulation}
+\label{sec:problem}
+
+Let $o_t$ denote multi-view RGB, $\ell_t$ the language instruction, and $q_t$ proprioception. Write $p_t$ for the current metric 3D body state (FK-derived link poses), $P_{t+1:t+H}$ for the future 4D body trajectory, and $V_{t+1:t+T}$ for future egocentric video.
+
+\textbf{4D--2D future alignment:}
+\begin{equation}
+p\bigl(P_{t+1:t+H},\, V_{t+1:t+T} \mid o_t,\, \ell_t,\, q_t\bigr).
+\label{eq:align}
+\end{equation}
+
+\textbf{Action prediction:}
+\begin{equation}
+p\bigl(A_t \mid P_{t+1:t+H},\, V_{t+1:t+T},\, o_t,\, \ell_t,\, q_t\bigr),
+\quad A_t = [a_t, \ldots, a_{t+H-1}].
+\label{eq:action}
+\end{equation}
+
+At deployment we use compact representations $Z^{\mathrm{4D}}_t$ and $Z^{\mathrm{wk}}_t$:
+\begin{equation}
+p\bigl(A_t \mid Z^{\mathrm{4D}}_t,\, Z^{\mathrm{wk}}_t,\, o_t,\, \ell_t,\, q_t\bigr).
+\label{eq:action-deploy}
+\end{equation}
+
+\textbf{Current 3D state estimation} (auxiliary):
+\begin{equation}
+p\bigl(p_t \mid o_t,\, \ell_t,\, P^{\mathrm{hist}}_t\bigr),
+\label{eq:cur}
+\end{equation}
+where $P^{\mathrm{hist}}_t$ is a short history of FK 4D tracks.
+
+\subsection{4D Future Expert}
+\label{sec:4d}
+
+\textbf{Motivation.} Point-cloud, depth, and scene-track 4D representations require sensing or heavy networks (Section~\ref{sec:related}). Manipulators already expose $q_t$; FK maps joints to link poses in microseconds. We therefore build 4D body supervision from \textbf{FK only}, gaining orders-of-magnitude lower latency and zero extra sensors compared with perception-based 4D pipelines.
+
+\textbf{7D link trajectories.} For each link/keypoint $k \in \{1,\ldots,K\}$,
+\begin{equation}
+x^k_t = \mathrm{FK}_k(q_t) = \bigl[p^k_t,\, r^k_t\bigr] \in \mathbb{R}^7,
+\label{eq:fk7d}
+\end{equation}
+where $p^k_t \in \mathbb{R}^3$ is position and $r^k_t \in \mathbb{R}^4$ orientation (unit quaternion) in the robot base frame.
+
+\textbf{Expert architecture.} The 4D Future Expert is a lightweight transformer over temporal 4D tokens derived from $q_t$ and $P^{\mathrm{hist}}_t$, plus conditioning from the VLM prefix. It outputs reconstructed \textbf{current} 4D state $\hat{P}_t$, predicted \textbf{future} trajectory $\hat{P}_{t+1:t+H}$, and hidden tokens $Z^{\mathrm{4D}}_t$ consumed by the World Knowledge Expert and Action Expert.
+
+\textbf{Role of $q_t$.} Proprioception enters both as raw input tokens and as the quantity that defines FK targets. Conditioning on $q_t$ anchors predictions in the robot's instantaneous configuration; through UBCA (Section~\ref{sec:wk}), $Z^{\mathrm{4D}}_t$ also supplies metric body context to the 2D foresight pathway.
+
+\textbf{4D future loss:}
+\begin{equation}
+\mathcal{L}_{\mathrm{4D}} = \beta \Bigl(
+    \operatorname{MSE}\bigl(\hat{P}_t(q_t),\, P_t\bigr)
+    + \gamma\, \operatorname{MSE}\bigl(\hat{P}_{t+1:t+H}(q_t),\, P_{t+1:t+H}\bigr)
+\Bigr).
+\label{eq:loss4d}
+\end{equation}
+
+\textbf{Current state loss:}
+\begin{equation}
+\mathcal{L}_{\mathrm{cur}} = \operatorname{MSE}\bigl(\hat{p}_t,\, p_t\bigr).
+\label{eq:losscur}
+\end{equation}
+
+\subsection{World Knowledge Expert and 4D--2D Alignment}
+\label{sec:wk}
+
+\textbf{Motivation.} Predicting future video alone does not guarantee consistency with body motion. We introduce a compact \textbf{World Knowledge Expert} that learns \textbf{implicit 2D-foresight tokens} $Z^{\mathrm{wk}}_t \in \mathbb{R}^{M \times d}$---a low-dimensional summary of what the camera should see---\textbf{aligned} with the 4D Future Expert's predictions.
+
+\textbf{Unified Bidirectional Cross-Attention (UBCA).} The 4D and World Knowledge experts are two transformer modules, each carrying temporal tokens. At layer $\ell$ and timestep $i$, for module $A \in \{\mathrm{4D}, \mathrm{wk}\}$ with companion $B$:
+\begin{equation}
+\tilde{h}^A_{\ell,i} = \mathrm{Attn}\bigl(q(h^A_{\ell,i}),\; K^A_{\le i},\; V^A_{\le i}\bigr)
++ \mathrm{Attn}\bigl(q(h^A_{\ell,i}),\; K^B_{\le i},\; V^B_{\le i}\bigr),
+\label{eq:ubca}
+\end{equation}
+with causal masking over timesteps---each token attends causally within its stream and to causal history in the partner stream. Fig.~\ref{fig:mask} shows the structured attention pattern.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\linewidth]{TrajWM-VLA_mask.png}
+    \caption{\textbf{Attention structure (conceptual).} Within the coupled 4D / World Knowledge block, tokens attend causally within their stream and to causal history in the partner stream. VLM prefix tokens attend only within the prefix; the Action Expert attends to the prefix and both expert streams.}
+    \label{fig:mask}
+\end{figure}
+
+The world-knowledge pathway produces
+\begin{equation}
+Z^{\mathrm{wk}}_t = f_{\mathrm{wk}}\bigl(o_t,\, \ell_t,\, q_t,\, Z^{\mathrm{4D}}_t\bigr).
+\label{eq:wk}
+\end{equation}
+
+During training, $Z^{\mathrm{wk}}_t$ conditions a \textbf{frozen} video diffusion transformer $g_{\mathrm{wm}}$. With VAE latents $x_0$, noise $\epsilon$, and $\tau \sim \mathcal{U}[0,1]$:
+\begin{equation}
+\mathcal{L}_{\mathrm{vid}} = \mathbb{E}_{\tau,\epsilon}\Bigl[
+    \bigl\| g_{\mathrm{wm}}(x_\tau,\, h(Z^{\mathrm{wk}}_t)) - (\epsilon - x_0) \bigr\|^2
+\Bigr].
+\label{eq:lossvid}
+\end{equation}
+
+Only $f_{\mathrm{wk}}$, UBCA parameters, and projection $h$ are updated; $g_{\mathrm{wm}}$ is \textbf{frozen}.
+
+\subsection{Action Expert}
+\label{sec:action}
+
+The Action Expert generates action chunk $A_t$ via flow matching, conditioned on the VLM prefix, $Z^{\mathrm{4D}}_t$, $Z^{\mathrm{wk}}_t$, and $q_t$. With ground-truth $A^0_t$, noise $\epsilon$, and $\tau \sim \mathcal{U}[0,1]$:
+\begin{equation}
+\mathcal{L}_{\mathrm{act}} = \mathbb{E}_{\tau,\epsilon}\Bigl[
+    \bigl\| v_\theta(A^\tau_t,\, o_t,\, \ell_t,\, q_t,\, Z^{\mathrm{4D}}_t,\, Z^{\mathrm{wk}}_t) - (\epsilon - A^0_t) \bigr\|^2
+\Bigr].
+\label{eq:lossact}
+\end{equation}
+
+\subsection{Multi-Task Training Objective}
+\label{sec:training}
+
+\begin{equation}
+\mathcal{L} = \lambda_{\mathrm{cur}}\mathcal{L}_{\mathrm{cur}}
+    + \lambda_{\mathrm{4D}}\mathcal{L}_{\mathrm{4D}}
+    + \lambda_{\mathrm{vid}}\mathcal{L}_{\mathrm{vid}}
+    + \lambda_{\mathrm{act}}\mathcal{L}_{\mathrm{act}}
+    + \lambda_{\mathrm{vqa}}\mathcal{L}_{\mathrm{vqa}}.
+\label{eq:losstotal}
+\end{equation}
+
+Post-training runs for \textbf{10{,}000} steps. The video world model $g_{\mathrm{wm}}$ is \textbf{frozen}. All other trainable modules---VLM, 4D Future Expert, World Knowledge Expert, UBCA, projection $h$, and Action Expert---are updated jointly from step~0. Let $\eta$ denote the base learning rate for experts and the action head; the VLM uses $\eta/5$. No separate warmup stage is applied.
+
+\subsection{Inference}
+\label{sec:inference}
+
+At deployment: (1)~encode $(o_t, \ell_t)$ with the VLM; (2)~run both experts with UBCA to obtain $Z^{\mathrm{4D}}_t$, $Z^{\mathrm{wk}}_t$; (3)~run the Action Expert to output $A_t$; (4)~\textbf{do not} invoke $g_{\mathrm{wm}}$. The extra cost vs.\ a plain 2D VLA is two lightweight expert forward passes and FK on $q_t$.
+
+% ====================================================================
+\section{Experiments}
+\label{sec:experiments}
+
+We evaluate 4DW-VLA on RoboTwin~2.0~\cite{chen2025robotwin2} against two \textbf{representative baseline families} that isolate different gaps in current VLA design. We ask: (1)~Does explicit \textbf{4D--2D alignment} improve in-domain (Easy) success over a \textbf{2D-foresight} VLA that predicts future video but not metric 3D/4D body motion? (2)~Does the same recipe improve robustness on the Hard (domain-randomized, OOD) split? (3)~Do gains persist across stacking, tool-use scanning, and placement tasks?
+
+\subsection{Experimental Setup}
+
+\textbf{Benchmark.} RoboTwin~2.0 is a dual-arm manipulation suite on SAPIEN with domain randomization over clutter, lighting, background texture, table height, and language~\cite{chen2025robotwin2}. Easy = \texttt{demo\_clean}; Hard = \texttt{demo\_randomized} (OOD). Evaluations use the Aloha-AgileX bimanual embodiment; success rate is the metric.
+
+\textbf{Tasks.} \texttt{stack\_bowls\_three} (geometrically precise stacking), \texttt{scan\_object} (dual-arm tool use), and \texttt{place\_bread\_skillet} (distinct placement objective).
+
+\textbf{Baselines.} We compare against two published VLAs that represent complementary design points; neither serves as an architectural parent of 4DW-VLA.
+
+\textbf{InternVLA-A1.5}~\cite{internvla15} (Shanghai AI Laboratory) represents the \textbf{2D-foresight VLA} family: temporal reasoning and future \textbf{2D video} distillation, but \textbf{no explicit 3D/4D body motion} or 4D--2D alignment. We re-implement and train it under the same post-training budget as 4DW-VLA.
+
+\textbf{LingBot-VLA~2.0}~\cite{lingbot2026} (Robbyant / Ant Group) represents the \textbf{depth-plus-video VLA} family: \textbf{3D (depth)} cues and temporal video generation, but \textbf{no coupling} of 3D/4D body trajectories with 2D temporal evolution. We do not reproduce LingBot-VLA~2.0; numbers are \textbf{as-reported}. Not evaluated on \texttt{scan\_object} or \texttt{place\_bread\_skillet} (n/a).
+
+\textbf{Training recipe.} 4DW-VLA and re-implemented InternVLA-A1.5 share a \textbf{10{,}000-step} post-training budget. The video world model $g_{\mathrm{wm}}$ is \textbf{frozen}. Expert and action-head parameters use base learning rate $\eta$; the VLM uses $\eta/5$. No separate warmup stage is applied (Table~\ref{tab:recipe}).
+
+\begin{table*}[t]
+\centering
+\caption{\textbf{Post-training success rates (\%) on RoboTwin~2.0.} Easy = \texttt{demo\_clean}; Hard = \texttt{demo\_randomized}. Bold = best per column.}
+\label{tab:main}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\textwidth}{lCCCCCC}
+\toprule[1.5pt]
+ & \multicolumn{2}{c}{\texttt{stack\_bowls\_three}}
+ & \multicolumn{2}{c}{\texttt{scan\_object}}
+ & \multicolumn{2}{c}{\texttt{place\_bread\_skillet}} \\
+\cmidrule(lr){2-3} \cmidrule(lr){4-5} \cmidrule(lr){6-7}
+Method & Easy & Hard & Easy & Hard & Easy & Hard \\
+\midrule
+InternVLA-A1.5 & 71 & 56 & \textbf{45} & 28 & 31 & 20 \\
+LingBot-VLA~2.0 & 78 & 22 & n/a & n/a & n/a & n/a \\
+\textbf{4DW-VLA (ours)} & \textbf{81} & \textbf{58} & \textbf{45} & \textbf{33} & \textbf{39} & \textbf{29} \\
+\bottomrule[1.5pt]
+\end{tabularx}
+\end{table*}
+
+\begin{table}[t]
+\centering
+\caption{\textbf{Shared post-training recipe (4DW-VLA and re-implemented InternVLA-A1.5).}}
+\label{tab:recipe}
+\small
+\begin{tabularx}{\linewidth}{@{}lX@{}}
+\toprule[1.5pt]
+Item & Setting \\
+\midrule
+Benchmark & RoboTwin 2.0 \\
+Post-training budget & 10{,}000 steps \\
+Video world model $g_{\mathrm{wm}}$ & Frozen \\
+VLM learning rate & $\eta/5$ (experts / action at $\eta$) \\
+Warmup & None \\
+Easy / Hard & \texttt{demo\_clean} / \texttt{demo\_randomized} \\
+\bottomrule[1.5pt]
+\end{tabularx}
+\end{table}
+
+\subsection{Main Results}
+
+Fig.~\ref{fig:results} visualizes Table~\ref{tab:main}.
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=\textwidth]{fig5_results.png}
+    \caption{\textbf{RoboTwin~2.0 success rates.} Grouped bars for Easy and Hard on three tasks. LingBot-VLA~2.0: n/a on two tasks.}
+    \label{fig:results}
+\end{figure*}
+
+\textbf{\texttt{stack\_bowls\_three}.} 4DW-VLA reaches 81\%/58\% (Easy/Hard) vs.\ InternVLA-A1.5 (71\%/56\%) and LingBot-VLA~2.0 (78\%/22\%). On Easy all three are competitive; on Hard, LingBot-VLA~2.0 collapses to 22\% while 4DW-VLA holds 58\%---consistent with \textbf{4D--2D aligned body foresight} under visual randomization.
+
+\textbf{\texttt{scan\_object}.} 4DW-VLA ties InternVLA-A1.5 on Easy (45\%) and leads on Hard (33\% vs.\ 28\%).
+
+\textbf{\texttt{place\_bread\_skillet}.} 4DW-VLA reaches 39\%/29\% vs.\ 31\%/20\% for InternVLA-A1.5 (+8/+9 points). LingBot-VLA~2.0 has no reported result on this task.
+
+Across evaluated columns, 4DW-VLA is best reported. Hard gains over InternVLA-A1.5: +2, +5, +9 points on the three tasks; over LingBot-VLA~2.0 on \texttt{stack\_bowls\_three} Hard: +36 points. Trial counts and confidence intervals remain to be finalized (Section~\ref{sec:limitations}).
+
+\subsection{What the Numbers Do and Do Not Show}
+
+Easy scores match or exceed InternVLA-A1.5 on all three tasks, indicating that 4D and aligned 2D auxiliary heads need not hurt in-domain learning. Consistent Hard improvements support the hypothesis that \textbf{explicit 4D--2D coupling} matters more under domain shift than \textbf{2D video foresight alone}. The comparison does \textbf{not} yet isolate UBCA from the multi-task loss, nor separate 4D prediction from video distillation. LingBot-VLA~2.0 numbers are unverified externally reported values.
+
+\subsection{Real-Robot Validation (In Progress)}
+
+\begin{table}[t]
+\centering
+\caption{\textbf{Real-robot validation protocol (results pending).}}
+\label{tab:realrobot}
+\small
+\begin{tabularx}{\linewidth}{@{}lX@{}}
+\toprule[1.5pt]
+Item & Setting \\
+\midrule
+Platform & TBD \\
+Tasks & TBD subset of the three RoboTwin~2.0 tasks above \\
+Trials per task & TBD \\
+Compared methods & 4DW-VLA vs.\ InternVLA-A1.5 (2D-foresight baseline) \\
+Metric & Success rate \\
+\bottomrule[1.5pt]
+\end{tabularx}
+\end{table}
+
+% ====================================================================
+\section{Limitations}
+\label{sec:limitations}
+
+\begin{itemize}
+\item \textbf{Body-centric 4D, not full scene geometry.} FK trajectories capture the robot's own motion, not independent object dynamics or extrinsic scene structure.
+\item \textbf{FK accuracy depends on calibration.} URDF--hardware mismatch propagates into 4D labels; sim-to-real kinematics gap is unstudied.
+\item \textbf{World-model distillation quality.} Removing $g_{\mathrm{wm}}$ at inference assumes $Z^{\mathrm{wk}}_t$ captures sufficient visual dynamics.
+\item \textbf{UBCA ablations pending.} Late concatenation and unidirectional cross-attention are not yet compared.
+\item \textbf{Incomplete ablations.} Contributions of $\mathcal{L}_{\mathrm{4D}}$, $\mathcal{L}_{\mathrm{vid}}$, and UBCA are not isolated; $\lambda_{\cdot}$, $\beta$, $\gamma$, and horizons $H$, $T$ are not fully swept.
+\item \textbf{Limited task set and metadata.} Three RoboTwin~2.0 tasks only; trial counts, seeds, and confidence intervals remain to be finalized.
+\item \textbf{Real-robot validation incomplete.} All Table~\ref{tab:main} numbers are simulated; Section~\ref{sec:experiments} real-robot results are pending.
+\end{itemize}
+
+% ====================================================================
+\section{Conclusion}
+\label{sec:conclusion}
+
+We presented \textbf{4DW-VLA}, a \textbf{4D and world-model aligned VLA} for robotic manipulation. It addresses the gap between 2D image policies and the 4D physical world by (i)~\textbf{lightweight FK 7D link trajectories} instead of costly perception-based 4D, (ii)~\textbf{Unified Bidirectional Cross-Attention} that aligns future 4D body motion with future 2D camera video, and (iii)~\textbf{distilling} a frozen large video world model at training time while \textbf{discarding} it at inference. On RoboTwin~2.0, 4DW-VLA matches or exceeds a \textbf{2D-foresight} representative (InternVLA-A1.5) and a \textbf{depth-plus-video} representative (LingBot-VLA~2.0, as-reported), with the strongest advantage under domain randomization---consistent with the claim that coupling metric body motion to visual foresight matters beyond temporal 2D prediction or depth-augmented video alone. Future work will ablate UBCA and multi-task components, extend evaluation, and complete real-robot validation.

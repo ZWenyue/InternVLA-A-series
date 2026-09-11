@@ -1,0 +1,46 @@
+% IEEE RA-L format (v0.2 from 4DW-VLA_2.markdown)
+\documentclass[journal]{IEEEtran}
+
+\usepackage{times}
+\usepackage[numbers]{natbib}
+\usepackage{graphicx}
+\graphicspath{{../4DW-VLA/figures/}{images/}}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{caption}
+\usepackage[bookmarks=true,colorlinks=true,
+            linkcolor=black,urlcolor=blue,citecolor=black]{hyperref}
+\usepackage{url}
+
+\newcolumntype{C}{>{\centering\arraybackslash}X}
+
+\begin{document}
+
+\title{4DW-VLA: 4D and World-Model Aligned Vision-Language-Action for Robotic Manipulation}
+
+\author{Gang Luo, \IEEEmembership{Member,~IEEE,}
+        and Daohe Tongtai%
+\thanks{G.~Luo and D.~Tongtai are with Daohe Tongtai.}%
+}
+
+\markboth{IEEE Robotics and Automation Letters,~Vol.~XX, No.~X, Month~2026}%
+{Luo \MakeLowercase{\textit{et al.}}: 4DW-VLA}
+
+\maketitle
+
+\begin{abstract}
+Most vision-language-action (VLA) policies operate on 2D images, yet robots act in a metric 3D workspace whose configuration evolves over time---a 4D problem. Methods that inject 3D or 4D structure often rely on depth sensors, point-cloud encoders, or heavy scene reconstruction, which increases model size, training cost, and deployment latency; many of them still treat spatial geometry and temporal dynamics as separate concerns. World-model-augmented VLAs predict future 2D video but rarely align that visual foresight with the robot's own metric body motion, so predicted actions can be temporally coherent in pixel space yet physically inconsistent in 3D. We present \textbf{4DW-VLA}, a \textbf{4D and world-model aligned VLA} that jointly models (i)~the robot's future 4D body trajectories in 3D space and (ii)~the future 2D video the onboard camera should observe, and uses both to condition chunked action generation. A lightweight \textbf{4D Future Expert} obtains 7D link trajectories (3D position + orientation) from forward kinematics (FK) at negligible cost---orders of magnitude cheaper than point-cloud or depth-pipeline 4D extraction. A compact \textbf{World Knowledge Expert} exchanges information with the 4D expert through \textbf{Unified Bidirectional Cross-Attention}, producing 2D-foresight tokens that are already aligned with predicted 4D motion and supervise a \textbf{frozen} large video world model during training only. At inference, the bulky world model is removed; the two lightweight experts and the action head remain, yielding a small deployable policy with no video-generation cost. We formulate multi-task learning over current 3D state estimation, future 4D prediction, future 2D foresight distillation, and action-chunk generation under a single weighted objective. On three RoboTwin~2.0 bimanual tasks, 4DW-VLA matches or exceeds representative baselines from the \textbf{2D-foresight} and \textbf{depth-plus-video} VLA families, with the largest gains under domain randomization.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Vision-language-action models, 4D representation, world models, robotic manipulation, cross-attention.
+\end{IEEEkeywords}
+
+\input{4DW-VLA_body.tex}
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}

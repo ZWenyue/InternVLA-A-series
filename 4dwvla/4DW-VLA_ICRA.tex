@@ -1,0 +1,39 @@
+% ICRA submission format (IEEE conference two-column)
+\documentclass[conference]{IEEEtran}
+
+\usepackage{times}
+\usepackage[numbers]{natbib}
+\usepackage{graphicx}
+\graphicspath{{../4DW-VLA/figures/}}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{caption}
+\usepackage[bookmarks=true,colorlinks=true,
+            linkcolor=black,urlcolor=blue,citecolor=black]{hyperref}
+\usepackage{url}
+
+\newcolumntype{C}{>{\centering\arraybackslash}X}
+
+\begin{document}
+
+\title{4DW-VLA: 4D and World-Model Aligned Vision-Language-Action\\
+       for Robotic Manipulation}
+
+\author{Gang Luo\\Daohe Tongtai}
+
+\maketitle
+
+\begin{abstract}
+Most vision-language-action (VLA) policies operate on 2D images, yet robots act in a metric 3D workspace whose configuration evolves over time---a 4D problem. Methods that inject 3D or 4D structure often rely on depth sensors, point-cloud encoders, or heavy scene reconstruction, which increases model size, training cost, and deployment latency; many still treat spatial geometry and temporal dynamics as separate concerns. World-model-augmented VLAs predict future 2D video but rarely align that visual foresight with the robot's own metric body motion. We present \textbf{4DW-VLA}, a \textbf{4D and world-model aligned VLA} that jointly models (i)~future 4D body trajectories via lightweight FK and (ii)~future 2D egocentric video, and uses both to condition chunked action generation. A \textbf{4D Future Expert} and \textbf{World Knowledge Expert} exchange information through \textbf{Unified Bidirectional Cross-Attention}; a frozen large video world model supervises training only and is removed at inference. On three RoboTwin~2.0 tasks, 4DW-VLA matches or exceeds representative \textbf{2D-foresight} and \textbf{depth-plus-video} baselines, with the largest gains under domain randomization.
+\end{abstract}
+
+\IEEEpeerreviewmaketitle
+
+\input{4DW-VLA_body.tex}
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}

@@ -1,0 +1,112 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\citation{rt1,rt2,chi2023diffusion,zhao2023act,kim2024openvla,black2024pi0}
+\citation{ze2024dp3,yang2025fp3,gervet2023act3d}
+\citation{ha2018worldmodels,nvidia2026wam,lawam2026}
+\@writefile{toc}{\contentsline {section}{\numberline {I}Introduction}{1}{section.1}\protected@file@percent }
+\newlabel{sec:intro}{{I}{1}{Introduction}{section.1}{}}
+\citation{walke2023bridge,khazatsky2024droid,vuong2023oxe}
+\citation{rt2,kim2024openvla,black2024pi0,liu2024rdt}
+\citation{rt2}
+\citation{kim2024openvla}
+\citation{chi2023diffusion}
+\citation{liu2024rdt}
+\citation{black2024pi0}
+\citation{nvidia2026wam,lawam2026,dreaming2026}
+\citation{rynnworld4d2026}
+\citation{fourdvla2025}
+\citation{pri4r2026}
+\citation{lift3dvla2026}
+\citation{spatialvla2025}
+\citation{fourdwam2026}
+\citation{ha2018worldmodels,levy2026simdist,hansen2024tdmpc2}
+\citation{nvidia2026wam,wamsurvey2026}
+\@writefile{toc}{\contentsline {section}{\numberline {II}Related Work}{2}{section.2}\protected@file@percent }
+\newlabel{sec:related}{{II}{2}{Related Work}{section.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-A}}Foundation Models in Robotics}{2}{subsection.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-B}}3D and 4D Representations for Manipulation}{2}{subsection.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-C}}World Models and World-Action Models}{2}{subsection.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {III}Method}{2}{section.3}\protected@file@percent }
+\newlabel{sec:method}{{III}{2}{Method}{section.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-A}}Problem Formulation}{2}{subsection.3.1}\protected@file@percent }
+\newlabel{sec:problem}{{\mbox  {III-A}}{2}{Problem Formulation}{subsection.3.1}{}}
+\newlabel{eq:align}{{1}{2}{Problem Formulation}{equation.1}{}}
+\newlabel{eq:action}{{2}{2}{Problem Formulation}{equation.2}{}}
+\newlabel{eq:action-deploy}{{3}{2}{Problem Formulation}{equation.3}{}}
+\newlabel{eq:cur}{{4}{2}{Problem Formulation}{equation.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-B}}4D Future Expert}{2}{subsection.3.2}\protected@file@percent }
+\newlabel{sec:4d}{{\mbox  {III-B}}{2}{4D Future Expert}{subsection.3.2}{}}
+\newlabel{eq:fk7d}{{5}{2}{4D Future Expert}{equation.5}{}}
+\newlabel{eq:loss4d}{{6}{2}{4D Future Expert}{equation.6}{}}
+\newlabel{eq:losscur}{{7}{2}{4D Future Expert}{equation.7}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-C}}World Knowledge Expert and 4D--2D Alignment}{2}{subsection.3.3}\protected@file@percent }
+\newlabel{sec:wk}{{\mbox  {III-C}}{2}{World Knowledge Expert and 4D--2D Alignment}{subsection.3.3}{}}
+\newlabel{eq:ubca}{{8}{2}{World Knowledge Expert and 4D--2D Alignment}{equation.8}{}}
+\newlabel{eq:wk}{{9}{2}{World Knowledge Expert and 4D--2D Alignment}{equation.9}{}}
+\citation{chen2025robotwin2}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces \textbf  {4DW-VLA overview.} A VLM prefix encodes RGB and language. The \textbf  {4D Future Expert} predicts current and future FK 7D link trajectories. The \textbf  {World Knowledge Expert} predicts implicit 2D-foresight tokens aligned with 4D through \textbf  {UBCA}. A \textbf  {frozen} video world model supervises 2D foresight during training only. The \textbf  {Action Expert} consumes VLM tokens and both experts' outputs. At inference, the world model is dropped.}}{3}{figure.caption.1}\protected@file@percent }
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{fig:overview}{{1}{3}{\textbf {4DW-VLA overview.} A VLM prefix encodes RGB and language. The \textbf {4D Future Expert} predicts current and future FK 7D link trajectories. The \textbf {World Knowledge Expert} predicts implicit 2D-foresight tokens aligned with 4D through \textbf {UBCA}. A \textbf {frozen} video world model supervises 2D foresight during training only. The \textbf {Action Expert} consumes VLM tokens and both experts' outputs. At inference, the world model is dropped}{figure.caption.1}{}}
+\newlabel{eq:lossvid}{{10}{3}{World Knowledge Expert and 4D--2D Alignment}{equation.10}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-D}}Action Expert}{3}{subsection.3.4}\protected@file@percent }
+\newlabel{sec:action}{{\mbox  {III-D}}{3}{Action Expert}{subsection.3.4}{}}
+\newlabel{eq:lossact}{{11}{3}{Action Expert}{equation.11}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-E}}Multi-Task Training Objective}{3}{subsection.3.5}\protected@file@percent }
+\newlabel{sec:training}{{\mbox  {III-E}}{3}{Multi-Task Training Objective}{subsection.3.5}{}}
+\newlabel{eq:losstotal}{{12}{3}{Multi-Task Training Objective}{equation.12}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-F}}Inference}{3}{subsection.3.6}\protected@file@percent }
+\newlabel{sec:inference}{{\mbox  {III-F}}{3}{Inference}{subsection.3.6}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {IV}Experiments}{3}{section.4}\protected@file@percent }
+\newlabel{sec:experiments}{{IV}{3}{Experiments}{section.4}{}}
+\citation{internvla15}
+\citation{lingbot2026}
+\bibstyle{plainnat}
+\bibdata{references}
+\bibcite{black2024pi0}{{1}{2024}{{Black et~al.}}{{}}}
+\bibcite{rt1}{{2}{2023{}}{{Brohan et~al.}}{{Brohan, Brown, Carbajal, et~al.}}}
+\bibcite{rt2}{{3}{2023{}}{{Brohan et~al.}}{{Brohan, Brown, Carbajal, et~al.}}}
+\bibcite{chen2025robotwin2}{{4}{2025}{{Chen et~al.}}{{}}}
+\bibcite{chi2023diffusion}{{5}{2023}{{Chi et~al.}}{{Chi, Feng, Du, Xu, Cousineau, Burchfiel, and Song}}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces \textbf  {Attention structure.} Within the coupled 4D / World Knowledge block, tokens attend causally within their stream and to causal history in the partner stream.}}{4}{figure.caption.2}\protected@file@percent }
+\newlabel{fig:mask}{{2}{4}{\textbf {Attention structure.} Within the coupled 4D / World Knowledge block, tokens attend causally within their stream and to causal history in the partner stream}{figure.caption.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-A}}Experimental Setup}{4}{subsection.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-B}}Main Results}{4}{subsection.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-C}}Discussion}{4}{subsection.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-D}}Real-Robot Validation (In Progress)}{4}{subsection.4.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {V}Limitations}{4}{section.5}\protected@file@percent }
+\newlabel{sec:limitations}{{V}{4}{Limitations}{section.5}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {VI}Conclusion}{4}{section.6}\protected@file@percent }
+\newlabel{sec:conclusion}{{VI}{4}{Conclusion}{section.6}{}}
+\bibcite{gervet2023act3d}{{6}{2023}{{Gervet et~al.}}{{}}}
+\bibcite{ha2018worldmodels}{{7}{2018}{{Ha and Schmidhuber}}{{}}}
+\bibcite{hansen2024tdmpc2}{{8}{2024}{{Hansen et~al.}}{{Hansen, Su, and Wang}}}
+\bibcite{internvla15}{{9}{2026}{{InternVLA-A1.5 Team}}{{}}}
+\bibcite{khazatsky2024droid}{{10}{2024}{{Khazatsky et~al.}}{{}}}
+\bibcite{kim2024openvla}{{11}{2024}{{Kim et~al.}}{{}}}
+\bibcite{levy2026simdist}{{12}{2026}{{Levy et~al.}}{{}}}
+\bibcite{liu2024rdt}{{13}{2024}{{Liu et~al.}}{{}}}
+\bibcite{nvidia2026wam}{{14}{2026}{{NVIDIA}}{{}}}
+\bibcite{spatialvla2025}{{15}{2025}{{others}}{{}}}
+\bibcite{dreaming2026}{{16}{2026{}}{{others}}{{}}}
+\bibcite{fourdwam2026}{{17}{2026{}}{{others}}{{}}}
+\bibcite{lawam2026}{{18}{2026{}}{{others}}{{}}}
+\bibcite{lift3dvla2026}{{19}{2026{}}{{others}}{{}}}
+\bibcite{pri4r2026}{{20}{2026{}}{{others}}{{}}}
+\bibcite{wamsurvey2026}{{21}{2026{}}{{others}}{{}}}
+\@writefile{lot}{\contentsline {table}{\numberline {I}{\ignorespaces \textbf  {Post-training success rates (\%) on RoboTwin~2.0.} Easy = \texttt  {demo\_clean}; Hard = \texttt  {demo\_randomized}. Bold = best per column.}}{5}{table.caption.3}\protected@file@percent }
+\newlabel{tab:main}{{I}{5}{\textbf {Post-training success rates (\%) on RoboTwin~2.0.} Easy = \texttt {demo\_clean}; Hard = \texttt {demo\_randomized}. Bold = best per column}{table.caption.3}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces \textbf  {RoboTwin~2.0 success rates.} Grouped bars for Easy and Hard on three tasks. LingBot-VLA~2.0: n/a on two tasks.}}{5}{figure.caption.5}\protected@file@percent }
+\newlabel{fig:results}{{3}{5}{\textbf {RoboTwin~2.0 success rates.} Grouped bars for Easy and Hard on three tasks. LingBot-VLA~2.0: n/a on two tasks}{figure.caption.5}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {II}{\ignorespaces \textbf  {Shared post-training recipe (4DW-VLA and re-implemented InternVLA-A1.5).}}}{5}{table.caption.4}\protected@file@percent }
+\newlabel{tab:recipe}{{II}{5}{\textbf {Shared post-training recipe (4DW-VLA and re-implemented InternVLA-A1.5).}}{table.caption.4}{}}
+\bibcite{fourdvla2025}{{22}{2025}{{Qian et~al.}}{{}}}
+\bibcite{lingbot2026}{{23}{2026}{{Robbyant}}{{}}}
+\bibcite{vuong2023oxe}{{24}{2023}{{Vuong et~al.}}{{}}}
+\bibcite{walke2023bridge}{{25}{2023}{{Walke et~al.}}{{}}}
+\bibcite{yang2025fp3}{{26}{2025}{{Yang et~al.}}{{Yang, Chen, Wen, and Gao}}}
+\bibcite{ze2024dp3}{{27}{2024}{{Ze et~al.}}{{}}}
+\bibcite{rynnworld4d2026}{{28}{2026}{{Zhao et~al.}}{{Zhao, Zhao, Huang, et~al.}}}
+\bibcite{zhao2023act}{{29}{2023}{{Zhao et~al.}}{{Zhao, Kumar, Levine, and Finn}}}
+\gdef \@abspage@last{6}

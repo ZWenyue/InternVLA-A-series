@@ -1,0 +1,175 @@
+\begin{thebibliography}{29}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Black et~al.(2024)]{black2024pi0}
+Kevin Black et~al.
+\newblock {$\pi_0$}: A vision-language-action flow model for general robot
+  control.
+\newblock \emph{arXiv preprint arXiv:2410.24164}, 2024.
+
+\bibitem[Brohan et~al.(2023{\natexlab{a}})Brohan, Brown, Carbajal, et~al.]{rt1}
+Anthony Brohan, Noah Brown, Justice Carbajal, et~al.
+\newblock {RT-1}: Robotics transformer for real-world control at scale.
+\newblock In \emph{Robotics: Science and Systems (RSS)}, 2023{\natexlab{a}}.
+
+\bibitem[Brohan et~al.(2023{\natexlab{b}})Brohan, Brown, Carbajal, et~al.]{rt2}
+Anthony Brohan, Noah Brown, Justice Carbajal, et~al.
+\newblock {RT-2}: Vision-language-action models transfer web knowledge to
+  robotic control.
+\newblock In \emph{Conference on Robot Learning (CoRL)}, 2023{\natexlab{b}}.
+
+\bibitem[Chen et~al.(2025)]{chen2025robotwin2}
+Tianyou Chen et~al.
+\newblock {RoboTwin 2.0}: A scalable data generator and benchmark with strong
+  domain randomization for robust bimanual robotic manipulation.
+\newblock \emph{arXiv preprint arXiv:2506.18088}, 2025.
+
+\bibitem[Chi et~al.(2023)Chi, Feng, Du, Xu, Cousineau, Burchfiel, and
+  Song]{chi2023diffusion}
+Cheng Chi, Siyuan Feng, Yilun Du, Zhenjia Xu, Eric Cousineau, Benjamin
+  Burchfiel, and Shuran Song.
+\newblock Diffusion policy: Visuomotor policy learning via action diffusion.
+\newblock In \emph{Robotics: Science and Systems (RSS)}, 2023.
+
+\bibitem[Gervet et~al.(2023)]{gervet2023act3d}
+Theophile Gervet et~al.
+\newblock {Act3D}: {3D} feature field transformers for multi-task robotic
+  manipulation.
+\newblock In \emph{Conference on Robot Learning (CoRL)}, 2023.
+
+\bibitem[Ha and Schmidhuber(2018)]{ha2018worldmodels}
+David Ha and J\"{u}rgen Schmidhuber.
+\newblock World models.
+\newblock \emph{arXiv preprint arXiv:1803.10122}, 2018.
+
+\bibitem[Hansen et~al.(2024)Hansen, Su, and Wang]{hansen2024tdmpc2}
+Nicklas Hansen, Hao Su, and Xiaolong Wang.
+\newblock {TD-MPC2}: Scalable, robust world models for continuous control.
+\newblock In \emph{International Conference on Learning Representations
+  (ICLR)}, 2024.
+
+\bibitem[{InternVLA-A1.5 Team}(2026)]{internvla15}
+{InternVLA-A1.5 Team}.
+\newblock {InternVLA-A1.5}: Unifying understanding, latent foresight, and
+  action for compositional generalization.
+\newblock \url{https://internrobotics.github.io/internvla-a15.github.io/},
+  2026.
+
+\bibitem[Khazatsky et~al.(2024)]{khazatsky2024droid}
+Alexander Khazatsky et~al.
+\newblock {DROID}: A large-scale in-the-wild robot manipulation dataset.
+\newblock In \emph{Robotics: Science and Systems (RSS)}, 2024.
+
+\bibitem[Kim et~al.(2024)]{kim2024openvla}
+Moo~Jin Kim et~al.
+\newblock {OpenVLA}: An open-source vision-language-action model.
+\newblock In \emph{Conference on Robot Learning (CoRL)}, 2024.
+
+\bibitem[Levy et~al.(2026)]{levy2026simdist}
+Jonathan Levy et~al.
+\newblock Simulation distillation: Pretraining world models in simulation for
+  rapid real-world adaptation.
+\newblock \emph{arXiv preprint arXiv:2603.15759}, 2026.
+
+\bibitem[Liu et~al.(2024)]{liu2024rdt}
+Songming Liu et~al.
+\newblock {RDT-1B}: A diffusion foundation model for bimanual manipulation.
+\newblock \emph{arXiv preprint arXiv:2410.07864}, 2024.
+
+\bibitem[{NVIDIA}(2026)]{nvidia2026wam}
+{NVIDIA}.
+\newblock Pretrained to imagine, fine-tuned to act: The rise of world-action
+  models.
+\newblock
+  \url{https://developer.nvidia.com/blog/pretrained-to-imagine-fine-tuned-to-act-the-rise-of-world-action-models/},
+  2026.
+
+\bibitem[others(2025)]{spatialvla2025}
+others.
+\newblock {SpatialVLA}: Exploring spatial representations for
+  vision-language-action model.
+\newblock \emph{arXiv preprint arXiv:2501.15830}, 2025.
+
+\bibitem[others(2026{\natexlab{a}})]{dreaming2026}
+others.
+\newblock Dreaming when necessary: Advancing world action models with adaptive
+  multi-modal reasoning.
+\newblock \emph{arXiv preprint arXiv:2606.07089}, 2026{\natexlab{a}}.
+
+\bibitem[others(2026{\natexlab{b}})]{fourdwam2026}
+others.
+\newblock {4D-WAM}: Infusing spatiotemporal awareness into world action models
+  through trajectory fields.
+\newblock \emph{arXiv preprint arXiv:2608.08023}, 2026{\natexlab{b}}.
+
+\bibitem[others(2026{\natexlab{c}})]{lawam2026}
+others.
+\newblock {LaWAM}: Latent world action models for efficient dynamics-aware
+  robot policies.
+\newblock \emph{arXiv preprint arXiv:2606.15768}, 2026{\natexlab{c}}.
+
+\bibitem[others(2026{\natexlab{d}})]{lift3dvla2026}
+others.
+\newblock {Lift3D-VLA}: Lifting {VLA} models to {3D} geometry and
+  dynamics-aware manipulation.
+\newblock \emph{arXiv preprint arXiv:2607.06564}, 2026{\natexlab{d}}.
+
+\bibitem[others(2026{\natexlab{e}})]{pri4r2026}
+others.
+\newblock {Pri4R}: Learning world dynamics for vision-language-action models
+  with privileged {4D} representation.
+\newblock \emph{arXiv preprint arXiv:2603.01549}, 2026{\natexlab{e}}.
+
+\bibitem[others(2026{\natexlab{f}})]{wamsurvey2026}
+others.
+\newblock World action models ({WAM}): A survey.
+\newblock \url{https://world-action-models.github.io/}, 2026{\natexlab{f}}.
+
+\bibitem[Qian et~al.(2025)]{fourdvla2025}
+Jingjing Qian et~al.
+\newblock {4D-VLA}: Spatiotemporal vision-language-action pretraining with
+  cross-scene calibration.
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}, 2025.
+
+\bibitem[{Robbyant}(2026)]{lingbot2026}
+{Robbyant}.
+\newblock {LingBot-VLA 2.0}: From foundation to application.
+\newblock \url{https://github.com/Robbyant/lingbot-vla-v2}, 2026.
+
+\bibitem[Vuong et~al.(2023)]{vuong2023oxe}
+Quan Vuong et~al.
+\newblock {Open X-Embodiment}: Robotic learning datasets and {RT-X} models,
+  2023.
+
+\bibitem[Walke et~al.(2023)]{walke2023bridge}
+Homer~Rich Walke et~al.
+\newblock {BridgeData V2}: A dataset for robot learning at scale.
+\newblock In \emph{Conference on Robot Learning (CoRL)}, 2023.
+
+\bibitem[Yang et~al.(2025)Yang, Chen, Wen, and Gao]{yang2025fp3}
+Rui Yang, Guojian Chen, Chuan Wen, and Yihua Gao.
+\newblock {FP3}: A {3D} foundation policy for robotic manipulation.
+\newblock \emph{arXiv preprint arXiv:2503.08950}, 2025.
+
+\bibitem[Ze et~al.(2024)]{ze2024dp3}
+Yanjie Ze et~al.
+\newblock {3D} diffusion policy: Generalizable visuomotor policy learning via
+  simple {3D} representations.
+\newblock In \emph{Robotics: Science and Systems (RSS)}, 2024.
+
+\bibitem[Zhao et~al.(2026)Zhao, Zhao, Huang, et~al.]{rynnworld4d2026}
+Haoyu Zhao, Xingyue Zhao, Siteng Huang, et~al.
+\newblock {RynnWorld-4D}: {4D} embodied world models for robotic manipulation.
+\newblock \emph{arXiv preprint arXiv:2607.06559}, 2026.
+
+\bibitem[Zhao et~al.(2023)Zhao, Kumar, Levine, and Finn]{zhao2023act}
+Tony~Z. Zhao, Vikash Kumar, Sergey Levine, and Chelsea Finn.
+\newblock Learning fine-grained bimanual manipulation with low-cost hardware.
+\newblock In \emph{Robotics: Science and Systems (RSS)}, 2023.
+
+\end{thebibliography}
