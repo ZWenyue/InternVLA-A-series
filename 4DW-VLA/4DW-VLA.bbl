@@ -1,4 +1,4 @@
-\begin{thebibliography}{32}
+\begin{thebibliography}{29}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -84,20 +84,13 @@ Songming Liu et~al.
 {NVIDIA}.
 \newblock Pretrained to imagine, fine-tuned to act: The rise of world-action
   models.
-\newblock
-  \url{https://developer.nvidia.com/blog/pretrained-to-imagine-fine-tuned-to-act-the-rise-of-world-action-models/},
-  2026.
+\newblock NVIDIA Developer Blog, 2026.
 
-\bibitem[{Octo Model Team} et~al.(2024)]{octo}
-{Octo Model Team} et~al.
-\newblock Octo: An open-source generalist robot policy.
-\newblock In \emph{Robotics: Science and Systems (RSS)}, 2024.
-
-\bibitem[O'Neill et~al.(2024)]{oneill2024oxe}
-Abby O'Neill et~al.
-\newblock {Open X-Embodiment}: Robotic learning datasets and {RT-X} models.
-\newblock In \emph{IEEE International Conference on Robotics and Automation
-  (ICRA)}, 2024.
+\bibitem[others(2025)]{spatialvla2025}
+others.
+\newblock {SpatialVLA}: Exploring spatial representations for
+  vision-language-action model.
+\newblock \emph{arXiv preprint arXiv:2501.15830}, 2025.
 
 \bibitem[others(2026{\natexlab{a}})]{dreaming2026}
 others.
@@ -105,57 +98,46 @@ others.
   multi-modal reasoning.
 \newblock \emph{arXiv preprint arXiv:2606.07089}, 2026{\natexlab{a}}.
 
-\bibitem[others(2026{\natexlab{b}})]{elan4d2026}
-others.
-\newblock {ELAN4D}: Embodiment-centric {4D} supervision for
-  vision-language-action models via plug-and-play adaptation.
-\newblock \emph{arXiv preprint arXiv:2605.30484}, 2026{\natexlab{b}}.
-
-\bibitem[others(2026{\natexlab{c}})]{fourdwam2026}
+\bibitem[others(2026{\natexlab{b}})]{fourdwam2026}
 others.
 \newblock {4D-WAM}: Infusing spatiotemporal awareness into world action models
   through trajectory fields.
-\newblock \emph{arXiv preprint arXiv:2608.08023}, 2026{\natexlab{c}}.
+\newblock \emph{arXiv preprint arXiv:2608.08023}, 2026{\natexlab{b}}.
 
-\bibitem[others(2026{\natexlab{d}})]{geopredict2026}
-others.
-\newblock {GeoPredict}: Geometric track prediction for vision-language-action
-  models.
-\newblock \emph{arXiv preprint arXiv:2512.16811}, 2026{\natexlab{d}}.
-\newblock CVPR 2026 Highlight.
-
-\bibitem[others(2026{\natexlab{e}})]{lawam2026}
+\bibitem[others(2026{\natexlab{c}})]{lawam2026}
 others.
 \newblock {LaWAM}: Latent world action models for efficient dynamics-aware
   robot policies.
-\newblock \emph{arXiv preprint arXiv:2606.15768}, 2026{\natexlab{e}}.
+\newblock \emph{arXiv preprint arXiv:2606.15768}, 2026{\natexlab{c}}.
 
-\bibitem[others(2026{\natexlab{f}})]{motionvla2026}
+\bibitem[others(2026{\natexlab{d}})]{lift3dvla2026}
 others.
-\newblock {MotionVLA}: Injecting geometric motion into vision-language-action
-  models.
-\newblock \emph{arXiv preprint arXiv:2606.08288}, 2026{\natexlab{f}}.
+\newblock {Lift3D-VLA}: Lifting {VLA} models to {3D} geometry and
+  dynamics-aware manipulation.
+\newblock \emph{arXiv preprint arXiv:2607.06564}, 2026{\natexlab{d}}.
 
-\bibitem[others(2026{\natexlab{g}})]{pri4r2026}
+\bibitem[others(2026{\natexlab{e}})]{pri4r2026}
 others.
 \newblock {Pri4R}: Learning world dynamics for vision-language-action models
   with privileged {4D} representation.
-\newblock \emph{arXiv preprint arXiv:2603.01549}, 2026{\natexlab{g}}.
+\newblock \emph{arXiv preprint arXiv:2603.01549}, 2026{\natexlab{e}}.
 
-\bibitem[others(2026{\natexlab{h}})]{wamsurvey2026}
+\bibitem[others(2026{\natexlab{f}})]{wamsurvey2026}
 others.
 \newblock World action models ({WAM}): A survey.
-\newblock \url{https://world-action-models.github.io/}, 2026{\natexlab{h}}.
+\newblock \url{https://world-action-models.github.io/}, 2026{\natexlab{f}}.
+
+\bibitem[Qian et~al.(2025)]{fourdvla2025}
+Jingjing Qian et~al.
+\newblock {4D-VLA}: Spatiotemporal vision-language-action pretraining with
+  cross-scene calibration.
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}, 2025.
 
 \bibitem[{Robbyant}(2026)]{lingbot2026}
 {Robbyant}.
 \newblock {LingBot-VLA 2.0}: From foundation to application.
 \newblock \url{https://github.com/Robbyant/lingbot-vla-v2}, 2026.
-
-\bibitem[Shridhar et~al.(2022)Shridhar, Manuelli, and Fox]{shridhar2022peract}
-Mohit Shridhar, Lucas Manuelli, and Dieter Fox.
-\newblock {Perceiver-Actor}: A multi-task transformer for robotic manipulation.
-\newblock In \emph{Conference on Robot Learning (CoRL)}, 2022.
 
 \bibitem[Vuong et~al.(2023)]{vuong2023oxe}
 Quan Vuong et~al.
@@ -166,13 +148,6 @@ Quan Vuong et~al.
 Homer~Rich Walke et~al.
 \newblock {BridgeData V2}: A dataset for robot learning at scale.
 \newblock In \emph{Conference on Robot Learning (CoRL)}, 2023.
-
-\bibitem[Xie et~al.(2024)]{xie2024decomposing}
-Annie Xie et~al.
-\newblock Decomposing the generalization gap in imitation learning for visual
-  robotic manipulation.
-\newblock In \emph{IEEE International Conference on Robotics and Automation
-  (ICRA)}, 2024.
 
 \bibitem[Yang et~al.(2025)Yang, Chen, Wen, and Gao]{yang2025fp3}
 Rui Yang, Guojian Chen, Chuan Wen, and Yihua Gao.
@@ -185,6 +160,11 @@ Yanjie Ze et~al.
 \newblock {3D} diffusion policy: Generalizable visuomotor policy learning via
   simple {3D} representations.
 \newblock In \emph{Robotics: Science and Systems (RSS)}, 2024.
+
+\bibitem[Zhao et~al.(2026)Zhao, Zhao, Huang, et~al.]{rynnworld4d2026}
+Haoyu Zhao, Xingyue Zhao, Siteng Huang, et~al.
+\newblock {RynnWorld-4D}: {4D} embodied world models for robotic manipulation.
+\newblock \emph{arXiv preprint arXiv:2607.06559}, 2026.
 
 \bibitem[Zhao et~al.(2023)Zhao, Kumar, Levine, and Finn]{zhao2023act}
 Tony~Z. Zhao, Vikash Kumar, Sergey Levine, and Chelsea Finn.
