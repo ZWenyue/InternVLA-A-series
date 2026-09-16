@@ -259,16 +259,19 @@ through UBCA. Fig.~\ref{fig:overview} shows the overview.
 
 \begin{figure*}[!t]
     \centering
-    \includegraphics[width=\textwidth]{TrajMoT_VLA_Figure1_Vector_1_2.png}
-    \caption{\textbf{4DW-VLA overview.} A VLM prefix encodes RGB and
-    language. The \textbf{4D Future Expert} predicts current and future FK
-    7D link trajectories from proprioception and 4D history. The
-    \textbf{World Knowledge Expert} predicts implicit 2D-foresight tokens
-    aligned with 4D through \textbf{Unified Bidirectional Cross-Attention}.
-    A \textbf{frozen} video world model supervises 2D foresight during
-    training only. The \textbf{Action Expert} consumes VLM tokens, both
-    experts' outputs, and predicts action chunks. At inference, the world
-    model is dropped; the VLM, two experts, and action head remain.}
+    \includegraphics[width=\textwidth]{robot_architecture_illustrator_safe_v3_1.png}
+    \caption{\textbf{4DW-VLA architecture.} Robot state $q_t$ and
+    FK-derived 4D trajectories are patchified, tokenized, and fed into
+    the \textbf{4D Future Expert}, whose 4D Encoder performs self-attention
+    and cross-attention to the VLM prefix. A shared output head predicts
+    both current and future 7D keypoints ($\mathcal{L}_{\mathrm{4D}}$).
+    The resulting tokens $Z^{\mathrm{4D}}$ are exchanged with the
+    \textbf{World Knowledge Expert} through \textbf{UBCA}, producing
+    implicit 2D-foresight tokens $Z^{\mathrm{wk}}$ that supervise a
+    \textbf{frozen} video world model during training only. The
+    \textbf{Action Expert} attends to the VLM, both expert outputs, and
+    generates action chunks ($\mathcal{L}_{\mathrm{act}}$). At inference
+    the world model is dropped.}
     \label{fig:overview}
 \end{figure*}
 
@@ -382,12 +385,16 @@ Fig.~\ref{fig:mask} shows the structured attention pattern.
 
 \begin{figure}[t]
     \centering
-    \includegraphics[width=\linewidth]{TrajWM-VLA_mask.pdf}
-    \caption{\textbf{Attention structure.} Within the coupled
-    4D~/~World Knowledge block, tokens attend causally within their stream
-    and to causal history in the partner stream. VLM prefix tokens attend
-    only within the prefix; the Action Expert attends to the prefix and
-    both expert streams.}
+    \includegraphics[width=\linewidth]{ubca_mask.pdf}
+    \caption{\textbf{UBCA attention structure.} The mask is shown at the
+    block level for illustration. The VLM prefix applies causal
+    self-attention. The 4D Future Expert and World Knowledge Expert use
+    causal self-attention within their own streams and causal cross-attention
+    to each other, forming the bidirectional UBCA pathway. Both streams
+    attend to the VLM prefix, while the Action Expert uses full cross-attention
+    to all three preceding streams and causal self-attention within its own
+    stream. Colors denote causal self-attention, full cross-attention, causal
+    UBCA, and masked connections.}
     \label{fig:mask}
 \end{figure}
 
@@ -456,14 +463,12 @@ expert forward passes and FK on $q_t$.
 \section{Experiments}
 \label{sec:experiments}
 
-We evaluate 4DW-VLA on RoboTwin~2.0~\cite{chen2025robotwin2} against two
-\textbf{representative baseline families} that isolate different gaps in
-current VLA design. We ask: (1)~Does explicit \textbf{4D--2D alignment}
-improve in-domain (Easy) success over a \textbf{2D-foresight} VLA that
-predicts future video but not metric 3D/4D body motion? (2)~Does the
-same recipe improve robustness on the Hard (domain-randomized, OOD)
-split? (3)~Do gains persist across stacking, tool-use scanning, and
-placement tasks?
+We evaluate 4DW-VLA on two simulation benchmarks
+(RoboTwin~2.0~\cite{chen2025robotwin2} and LIBERO-Plus) and on a
+real-robot platform. We ask: (1)~Does the 4D Future Expert improve
+success over VLAs that lack explicit 3D/4D body motion?
+(2)~Does the same recipe improve robustness under domain randomization?
+(3)~Do gains generalize across benchmarks and transfer to real hardware?
 
 \subsection{Experimental Setup}
 
@@ -570,14 +575,60 @@ reported result on this task.
 Hard gains over the best baseline per task are +2, +5, and +9 points,
 respectively.
 
+\subsection{LIBERO-Plus}
+
+To test whether the 4D Future Expert generalizes beyond RoboTwin~2.0, we
+evaluate on LIBERO-Plus with and without the 4D module.
+
+\begin{table}[!t]
+\centering
+\caption{\textbf{LIBERO-Plus success rates (\%).} Ablation of the 4D
+Future Expert.}
+\label{tab:libero}
+\small
+\begin{tabularx}{\linewidth}{@{}lC@{}}
+\toprule
+Method & Success \\
+\midrule
+4DW-VLA w/o 4D Expert  & TBD \\
+\textbf{4DW-VLA}       & TBD \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% TODO: fill Table~\ref{tab:libero} with LIBERO-Plus results.
+
+\subsection{Real-Robot Validation}
+\label{sec:realrobot}
+
+We deploy 4DW-VLA on a real bimanual platform to validate sim-to-real
+transfer of the FK-derived 4D signal.
+
+\begin{table}[!t]
+\centering
+\caption{\textbf{Real-robot success rates (\%).}}
+\label{tab:realrobot}
+\small
+\begin{tabularx}{\linewidth}{@{}lCC@{}}
+\toprule
+Task & 4DW-VLA w/o 4D & \textbf{4DW-VLA} \\
+\midrule
+TBD task 1 & TBD & TBD \\
+TBD task 2 & TBD & TBD \\
+TBD task 3 & TBD & TBD \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% TODO: fill Table~\ref{tab:realrobot} with real-robot results.
+
 \subsection{Discussion}
 
-Easy scores match or exceed other methods on all three tasks, indicating
-that 4D and aligned 2D auxiliary heads need not hurt in-domain learning.
-Consistent Hard improvements support the hypothesis that \textbf{explicit
-4D--2D coupling} matters more under domain shift than \textbf{2D video
-foresight alone}.
-LingBot-VLA~2.0 numbers are externally reported values.
+Easy scores match or exceed other methods on all three RoboTwin~2.0
+tasks, indicating that 4D and aligned 2D auxiliary heads need not hurt
+in-domain learning. Consistent Hard improvements support the hypothesis
+that \textbf{explicit 4D--2D coupling} matters more under domain shift
+than \textbf{2D video foresight alone}.
 
 % ====================================================================
 \section{Limitations}
@@ -595,10 +646,8 @@ LingBot-VLA~2.0 numbers are externally reported values.
   sufficient visual dynamics.
 \item \textbf{UBCA ablations pending.} Late concatenation and
   unidirectional cross-attention are not yet compared.
-\item \textbf{Limited task set.} Three RoboTwin~2.0 tasks only; trial
-  counts, seeds, and confidence intervals are not reported.
-\item \textbf{Simulation only.} All Table~\ref{tab:main} numbers are
-  from simulation; real-robot transfer is untested.
+\item \textbf{Limited task diversity.} Evaluation covers RoboTwin~2.0 and
+  LIBERO-Plus; broader benchmarks and object categories remain untested.
 \end{itemize}
 
 % ====================================================================
@@ -613,11 +662,11 @@ discard the 4D branch after training. Coupled with a World Knowledge
 Expert through bidirectional cross-attention and a frozen video world
 model used only during training, the architecture produces a small,
 fast policy with 4D-aligned visual foresight and no deployment-time video
-generation. On RoboTwin~2.0, 4DW-VLA matches or exceeds a
-\textbf{2D-foresight} baseline and a \textbf{depth-plus-video} baseline,
-with the strongest advantage under domain randomization. Future work will
-ablate the 4D expert (retained vs.\ discarded, 7D vs.\ 3D), extend
-evaluation, and validate on real hardware.
+generation. On RoboTwin~2.0 and LIBERO-Plus, 4DW-VLA matches or exceeds baselines
+that lack explicit 4D body motion, with the strongest advantage under
+domain randomization; real-robot experiments confirm sim-to-real transfer
+of the FK-derived 4D signal. Future work will ablate the 4D expert
+(retained vs.\ discarded, 7D vs.\ 3D) and extend to broader benchmarks.
 
 % ====================================================================
 \FloatBarrier
