@@ -51,6 +51,8 @@
 \citation{chen2025robotwin2}
 \citation{internvla15}
 \citation{lingbot2026}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces \textbf  {UBCA attention structure.} The mask is shown at the block level for illustration. The VLM prefix applies causal self-attention. The 4D Future Expert and World Knowledge Expert use causal self-attention within their own streams and causal cross-attention to each other, forming the bidirectional UBCA pathway. Both streams attend to the VLM prefix, while the Action Expert uses full cross-attention to all three preceding streams and causal self-attention within its own stream. Colors denote causal self-attention, full cross-attention, causal UBCA, and masked connections.}}{4}{figure.caption.2}\protected@file@percent }
+\newlabel{fig:mask}{{2}{4}{\textbf {UBCA attention structure.} The mask is shown at the block level for illustration. The VLM prefix applies causal self-attention. The 4D Future Expert and World Knowledge Expert use causal self-attention within their own streams and causal cross-attention to each other, forming the bidirectional UBCA pathway. Both streams attend to the VLM prefix, while the Action Expert uses full cross-attention to all three preceding streams and causal self-attention within its own stream. Colors denote causal self-attention, full cross-attention, causal UBCA, and masked connections}{figure.caption.2}{}}
 \newlabel{eq:ubca}{{8}{4}{World Knowledge Expert and 4D--2D Alignment}{equation.8}{}}
 \newlabel{eq:wk}{{9}{4}{World Knowledge Expert and 4D--2D Alignment}{equation.9}{}}
 \newlabel{eq:lossvid}{{10}{4}{World Knowledge Expert and 4D--2D Alignment}{equation.10}{}}
@@ -64,15 +66,29 @@
 \newlabel{sec:inference}{{\mbox  {III-F}}{4}{Inference}{subsection.3.6}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {IV}Experiments}{4}{section.4}\protected@file@percent }
 \newlabel{sec:experiments}{{IV}{4}{Experiments}{section.4}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {I}{\ignorespaces \textbf  {Post-training success rates (\%) on RoboTwin~2.0.} Easy = \texttt  {demo\_clean}; Hard = \texttt  {demo\_randomized}. Bold = best per column.}}{4}{table.caption.2}\protected@file@percent }
-\newlabel{tab:main}{{I}{4}{\textbf {Post-training success rates (\%) on RoboTwin~2.0.} Easy = \texttt {demo\_clean}; Hard = \texttt {demo\_randomized}. Bold = best per column}{table.caption.2}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {II}{\ignorespaces \textbf  {Shared post-training recipe.}}}{4}{table.caption.3}\protected@file@percent }
-\newlabel{tab:recipe}{{II}{4}{\textbf {Shared post-training recipe.}}{table.caption.3}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-A}}Experimental Setup}{4}{subsection.4.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-B}}Main Results}{4}{subsection.4.2}\protected@file@percent }
 \bibstyle{plainnat}
 \bibdata{references}
 \bibcite{black2024pi0}{{1}{2024}{{Black et~al.}}{{}}}
+\@writefile{lot}{\contentsline {table}{\numberline {I}{\ignorespaces \textbf  {Post-training success rates (\%) on RoboTwin~2.0.} Easy = \texttt  {demo\_clean}; Hard = \texttt  {demo\_randomized}. Bold = best per column.}}{5}{table.caption.3}\protected@file@percent }
+\newlabel{tab:main}{{I}{5}{\textbf {Post-training success rates (\%) on RoboTwin~2.0.} Easy = \texttt {demo\_clean}; Hard = \texttt {demo\_randomized}. Bold = best per column}{table.caption.3}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {II}{\ignorespaces \textbf  {Shared post-training recipe.}}}{5}{table.caption.4}\protected@file@percent }
+\newlabel{tab:recipe}{{II}{5}{\textbf {Shared post-training recipe.}}{table.caption.4}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces \textbf  {RoboTwin~2.0 success rates.} Grouped bars for Easy and Hard on three tasks. LingBot-VLA~2.0: n/a on two tasks.}}{5}{figure.caption.5}\protected@file@percent }
+\newlabel{fig:results}{{3}{5}{\textbf {RoboTwin~2.0 success rates.} Grouped bars for Easy and Hard on three tasks. LingBot-VLA~2.0: n/a on two tasks}{figure.caption.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-B}}Main Results}{5}{subsection.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-C}}LIBERO-Plus}{5}{subsection.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-D}}Real-Robot Validation}{5}{subsection.4.4}\protected@file@percent }
+\newlabel{sec:realrobot}{{\mbox  {IV-D}}{5}{Real-Robot Validation}{subsection.4.4}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {III}{\ignorespaces \textbf  {LIBERO-Plus success rates (\%).} Ablation of the 4D Future Expert.}}{5}{table.caption.6}\protected@file@percent }
+\newlabel{tab:libero}{{III}{5}{\textbf {LIBERO-Plus success rates (\%).} Ablation of the 4D Future Expert}{table.caption.6}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {IV}{\ignorespaces \textbf  {Real-robot success rates (\%).}}}{5}{table.caption.7}\protected@file@percent }
+\newlabel{tab:realrobot}{{IV}{5}{\textbf {Real-robot success rates (\%).}}{table.caption.7}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-E}}Discussion}{5}{subsection.4.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {V}Limitations}{5}{section.5}\protected@file@percent }
+\newlabel{sec:limitations}{{V}{5}{Limitations}{section.5}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {VI}Conclusion}{5}{section.6}\protected@file@percent }
+\newlabel{sec:conclusion}{{VI}{5}{Conclusion}{section.6}{}}
 \bibcite{rt1}{{2}{2023{}}{{Brohan et~al.}}{{Brohan, Brown, Carbajal, et~al.}}}
 \bibcite{rt2}{{3}{2023{}}{{Brohan et~al.}}{{Brohan, Brown, Carbajal, et~al.}}}
 \bibcite{chen2025robotwin2}{{4}{2025}{{Chen et~al.}}{{}}}
@@ -82,20 +98,6 @@
 \bibcite{hansen2024tdmpc2}{{8}{2024}{{Hansen et~al.}}{{Hansen, Su, and Wang}}}
 \bibcite{internvla15}{{9}{2026}{{InternVLA-A1.5 Team}}{{}}}
 \bibcite{khazatsky2024droid}{{10}{2024}{{Khazatsky et~al.}}{{}}}
-\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces \textbf  {RoboTwin~2.0 success rates.} Grouped bars for Easy and Hard on three tasks. LingBot-VLA~2.0: n/a on two tasks.}}{5}{figure.caption.4}\protected@file@percent }
-\newlabel{fig:results}{{2}{5}{\textbf {RoboTwin~2.0 success rates.} Grouped bars for Easy and Hard on three tasks. LingBot-VLA~2.0: n/a on two tasks}{figure.caption.4}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {III}{\ignorespaces \textbf  {LIBERO-Plus success rates (\%).} Ablation of the 4D Future Expert.}}{5}{table.caption.5}\protected@file@percent }
-\newlabel{tab:libero}{{III}{5}{\textbf {LIBERO-Plus success rates (\%).} Ablation of the 4D Future Expert}{table.caption.5}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {IV}{\ignorespaces \textbf  {Real-robot success rates (\%).}}}{5}{table.caption.6}\protected@file@percent }
-\newlabel{tab:realrobot}{{IV}{5}{\textbf {Real-robot success rates (\%).}}{table.caption.6}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-C}}LIBERO-Plus}{5}{subsection.4.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-D}}Real-Robot Validation}{5}{subsection.4.4}\protected@file@percent }
-\newlabel{sec:realrobot}{{\mbox  {IV-D}}{5}{Real-Robot Validation}{subsection.4.4}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-E}}Discussion}{5}{subsection.4.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {V}Limitations}{5}{section.5}\protected@file@percent }
-\newlabel{sec:limitations}{{V}{5}{Limitations}{section.5}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {VI}Conclusion}{5}{section.6}\protected@file@percent }
-\newlabel{sec:conclusion}{{VI}{5}{Conclusion}{section.6}{}}
 \bibcite{kim2024openvla}{{11}{2024}{{Kim et~al.}}{{}}}
 \bibcite{levy2026simdist}{{12}{2026}{{Levy et~al.}}{{}}}
 \bibcite{liu2024rdt}{{13}{2024}{{Liu et~al.}}{{}}}

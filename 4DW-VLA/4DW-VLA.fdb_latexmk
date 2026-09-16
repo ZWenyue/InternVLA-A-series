@@ -1,14 +1,14 @@
 # Fdb version 4
-["bibtex 4DW-VLA"] 1789434990.41245 "4DW-VLA.aux" "4DW-VLA.bbl" "4DW-VLA" 1789434991.62037 0
+["bibtex 4DW-VLA"] 1789546693.71253 "4DW-VLA.aux" "4DW-VLA.bbl" "4DW-VLA" 1789546694.92728 0
   "./references.bib" 1789115002.8474 8762 510f74aa8ae2ceb1bc9da8c1dde8537b ""
   "/home/l/.miktex/texmfs/install/bibtex/bst/natbib/plainnat.bst" 1787729113.82386 26816 ffe5423d2019860bad9f54bc402fac15 ""
-  "4DW-VLA.aux" 1789434991.34831 11077 99e405c19c936b8d22c1f745d88a5b66 "pdflatex"
+  "4DW-VLA.aux" 1789546694.63901 11993 bc755824569b4d24f54e6a4340d58dc7 "pdflatex"
   (generated)
   "4DW-VLA.bbl"
   "4DW-VLA.blg"
   (rewritten before read)
-["pdflatex"] 1789434990.5236 "/home/l/文档/Research/InternVLA-A-series/4DW-VLA/4DW-VLA.tex" "4DW-VLA.pdf" "4DW-VLA" 1789434991.62048 0
-  "/home/l/.miktex/texmfs/data/fonts/map/pdftex/pdftex.map" 1789114917.19611 82666 6ae954049cbd801ff08c004e318ae5a8 ""
+["pdflatex"] 1789546693.81665 "/home/l/文档/Research/InternVLA-A-series/4DW-VLA/4DW-VLA.tex" "4DW-VLA.pdf" "4DW-VLA" 1789546694.92739 0
+  "/home/l/.miktex/texmfs/data/fonts/map/pdftex/pdftex.map" 1789435323.14903 82666 6ae954049cbd801ff08c004e318ae5a8 ""
   "/home/l/.miktex/texmfs/data/miktex/data/le/pdftex/pdflatex.fmt" 1788156929.66951 13360260 86d4ae24c34f48cd88aa56028c620856 ""
   "/home/l/.miktex/texmfs/install/tex/generic/bigintcalc/bigintcalc.sty" 1787729138.32354 40635 c40361e206be584d448876bba8a64a3b ""
   "/home/l/.miktex/texmfs/install/tex/generic/bitset/bitset.sty" 1787729131.44035 33961 6b5c75130e435b2bfdb9f480a09a39f9 ""
@@ -35,7 +35,7 @@
   "/home/l/.miktex/texmfs/install/tex/latex/psnfss/times.sty" 1787729304.71492 888 31bd282fb2f5f4931c3f92b9bf2f8ef7 ""
   "/home/l/.miktex/texmfs/install/tex/latex/refcount/refcount.sty" 1787729122.83311 9878 9e94e8fa600d95f9c7731bb21dfb67a4 ""
   "/home/l/.miktex/texmfs/install/tex/latex/rerunfilecheck/rerunfilecheck.sty" 1787729140.20359 9684 a33a14b82ce60d6e77cb9be689d79ee6 ""
-  "/home/l/文档/Research/InternVLA-A-series/4DW-VLA/4DW-VLA.tex" 1789434989.0041 28937 16b071c4ebf113841698bde858ad688e ""
+  "/home/l/文档/Research/InternVLA-A-series/4DW-VLA/4DW-VLA.tex" 1789546692.15699 29429 94b46e2b2303213620423adc3d68a0ae ""
   "/usr/local/share/miktex-texmf/fonts/enc/dvips/base/8r.enc" 1787727608.34271 4993 1194fb36dfcb11d9ae9802f2b00b60a3 ""
   "/usr/local/share/miktex-texmf/fonts/tfm/adobe/courier/pcrb7t.tfm" 1787727606.19964 960 4ab65358b8406f30ef5496c8c096d22b ""
   "/usr/local/share/miktex-texmf/fonts/tfm/adobe/courier/pcrb8r.tfm" 1787727606.20064 1292 3059476c50a24578715759f22652f3d0 ""
@@ -122,14 +122,14 @@
   "/usr/local/share/miktex-texmf/tex/latex/tools/tabularx.sty" 1787727619.13504 7243 98a9e0737a56460d15d6b41be1ecc3b8 ""
   "/usr/local/share/miktex-texmf/tex/latex/url/url.sty" 1787727655.24713 12796 8edb7d69a20b857904dd0ea757c14ec9 ""
   "/usr/local/share/miktex-texmf/tex/latex/xcolor/xcolor.sty" 1787727655.71314 55384 b454dec21c2d9f45ec0b793f0995b992 ""
-  "4DW-VLA.aux" 1789434991.34831 11077 99e405c19c936b8d22c1f745d88a5b66 "pdflatex"
-  "4DW-VLA.bbl" 1789434990.48723 6984 969d0d41e7343316af154fd8ab528fef "bibtex 4DW-VLA"
-  "4DW-VLA.out" 1789434991.34931 2996 3284afb8e1ea406b09f3ccef01de1c23 "pdflatex"
-  "4DW-VLA.tex" 1789434989.0041 28937 16b071c4ebf113841698bde858ad688e ""
+  "4DW-VLA.aux" 1789546694.63901 11993 bc755824569b4d24f54e6a4340d58dc7 "pdflatex"
+  "4DW-VLA.bbl" 1789546693.78 6984 969d0d41e7343316af154fd8ab528fef "bibtex 4DW-VLA"
+  "4DW-VLA.out" 1789546694.63901 2996 3284afb8e1ea406b09f3ccef01de1c23 "pdflatex"
+  "4DW-VLA.tex" 1789546692.15699 29429 94b46e2b2303213620423adc3d68a0ae ""
   "IEEEtran.cls" 1788425221.73183 201353 775b18b42342447aea341b76a89fcb61 ""
-  "figures/TrajMoT_VLA_Figure1_Vector_1_2.png" 1788835508.4327 86504 31915163db1a2735a2c9f5d1ee2ba253 ""
-  "figures/TrajWM-VLA_mask.pdf" 1788851712.49096 164377 f63f4fdef50f53031f30ce1bc05394f2 ""
   "figures/fig5_results.png" 1788425221.68282 391271 47387e9ec4fde26e876c2bef791e6479 ""
+  "figures/ubca_mask_clean_v1_1.png" 1789546358.38649 19779 f3f363a4b3cd6b48eaaba73e13878418 ""
+  "robot_architecture_illustrator_safe_v3_1.png" 1789435249.0607 163420 f0208f882fbaeece0e8c5905a82ef5e4 ""
   (generated)
   "4DW-VLA.aux"
   "4DW-VLA.log"
