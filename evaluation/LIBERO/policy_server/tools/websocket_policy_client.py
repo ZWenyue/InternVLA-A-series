@@ -35,6 +35,9 @@ class WebsocketClientPolicy:
 
             try:
                 headers = {"Authorization": f"Api-Key {self._api_key}"} if self._api_key else None
+                # Server blocks its event loop during inference; the first call
+                # (kernel compilation) can exceed a short pong deadline.
+                ping_timeout = float(os.environ.get("POLICY_WS_PING_TIMEOUT", "600"))
                 connect_attempts = [
                     {
                         "compression": None,
@@ -42,7 +45,7 @@ class WebsocketClientPolicy:
                         "additional_headers": headers,
                         "open_timeout": 30,
                         "ping_interval": 20,
-                        "ping_timeout": 20,
+                        "ping_timeout": ping_timeout,
                     },
                     {
                         "compression": None,

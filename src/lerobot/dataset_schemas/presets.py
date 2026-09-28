@@ -242,7 +242,7 @@ def get_legacy_schemas() -> list[DatasetSchema]:
         },
         image_mapping={
             "observation.images.image": f"{OBS_IMAGES}.image0",
-            "observation.images.image2": f"{OBS_IMAGES}.image1",
+            "observation.images.wrist_image": f"{OBS_IMAGES}.image1",
         },
     ))
     

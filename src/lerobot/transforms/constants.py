@@ -318,7 +318,7 @@ IMAGE_MAPPING = defaultdict(
     },
     panda={
         "observation.images.image": f"{OBS_IMAGES}.image0", 
-        "observation.images.image2": f"{OBS_IMAGES}.image1", 
+        "observation.images.wrist_image": f"{OBS_IMAGES}.image1", 
     },
     arx_x5={
         "observation.images.cam_high": f"{OBS_IMAGES}.image0", 

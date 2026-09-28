@@ -18,8 +18,9 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJ_ROOT="${PROJ_ROOT:-$(cd "${SCRIPT_DIR}/.." && pwd)}"
 
+# HF_HOME: ckpts + Wan hub. HF_LEROBOT_HOME: suite roots from setup_libero_geop_rlds.sh
 export HF_HOME="${HF_HOME:-/tmp/zwy}"
-export HF_LEROBOT_HOME="${HF_LEROBOT_HOME:-${HF_HOME}/lerobot}"
+export HF_LEROBOT_HOME="${HF_LEROBOT_HOME:-/tmp/DATA/libero_geop_rlds20}"
 export WANDB_MODE="${WANDB_MODE:-offline}"
 export USE_LIBUV="${USE_LIBUV:-0}"
 export PYTHONUNBUFFERED=1
@@ -119,7 +120,7 @@ else
   export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0,1,2,3,4,5,6,7}"
   PROC_PER_NODE="${PROC_PER_NODE:-8}"
   BATCH_SIZE="${BATCH_SIZE:-32}"
-  STEPS="${STEPS:-100000}"
+  STEPS="${STEPS:-50000}"
   NUM_WORKERS="${NUM_WORKERS:-32}"
   SAVE_FREQ="${SAVE_FREQ:-5000}"
   LOG_FREQ="${LOG_FREQ:-200}"
@@ -252,6 +253,8 @@ ARGS=(
   --dataset.tokenize_state=true
   --dataset.use_fast_action_tokens=true
   --dataset.video_backend=torchcodec
+  --dataset.image_transforms.enable=true
+  --dataset.image_transforms.tfs='{"brightness":{"weight":1.0,"type":"ColorJitter","kwargs":{"brightness":[0.8,1.2]}},"contrast":{"weight":1.0,"type":"ColorJitter","kwargs":{"contrast":[0.8,1.2]}},"saturation":{"weight":1.0,"type":"ColorJitter","kwargs":{"saturation":[0.5,1.5]}},"hue":{"weight":1.0,"type":"ColorJitter","kwargs":{"hue":[-0.05,0.05]}},"sharpness":{"weight":1.0,"type":"SharpnessJitter","kwargs":{"sharpness":[0.5,1.5]}},"affine":{"weight":0.0,"type":"RandomAffine","kwargs":{"degrees":[-5.0,5.0],"translate":[0.05,0.05]}}}'
 
   --seed=42
   --batch_size="${BATCH_SIZE}"

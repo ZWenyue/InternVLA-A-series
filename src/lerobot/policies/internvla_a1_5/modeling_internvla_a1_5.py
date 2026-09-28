@@ -1938,8 +1938,9 @@ class InternVLAA15(nn.Module):
             loss_action = torch.zeros_like(u_t)
         else:
             action_out = suffix_out[:, -self.config.chunk_size:]
-            action_out = action_out.to(dtype=torch.float32)
+            action_out = action_out.to(dtype=self.action_out_proj.weight.dtype)
             v_t = self._apply_checkpoint(lambda x: self.action_out_proj(x), action_out)
+            v_t = v_t.float()
             loss_action = F.mse_loss(u_t, v_t, reduction="none")
 
         # Video loss — only computed for samples with real video frames
@@ -1962,8 +1963,9 @@ class InternVLAA15(nn.Module):
         if use_kpt:
             j = self.config.num_keypoint_joints
             kpt_dim = self.config.keypoint_track_input_dim
-            kpt_query_out = self.get_keypoint_token_output(kpt_out).to(dtype=torch.float32)  # [B, J, D]
-            pred_kpt_current = self.keypoint_out_proj(kpt_query_out)  # [B, J, kpt_dim]
+            kpt_dtype = self.keypoint_out_proj.weight.dtype
+            kpt_query_out = self.get_keypoint_token_output(kpt_out).to(dtype=kpt_dtype)  # [B, J, D]
+            pred_kpt_current = self.keypoint_out_proj(kpt_query_out).float()  # [B, J, kpt_dim]
 
             if kpt_t is None:
                 kpt_t = torch.zeros(B, j, kpt_dim, device=actions.device, dtype=torch.float32)
@@ -1971,12 +1973,12 @@ class InternVLAA15(nn.Module):
 
             chunk_size = self.config.chunk_size
             future_pos = self.future_kpt_pos_embed.to(
-                device=kpt_query_out.device, dtype=torch.float32
+                device=kpt_query_out.device, dtype=kpt_dtype
             )  # [C, D]
             future_kpt_tokens = kpt_query_out.unsqueeze(1) + future_pos[None, :, None, :]  # [B, C, J, D]
             future_kpt_pred = self.keypoint_out_proj(
                 future_kpt_tokens.reshape(B * chunk_size, j, -1)
-            ).reshape(B, chunk_size, j, kpt_dim)
+            ).float().reshape(B, chunk_size, j, kpt_dim)
 
             if kpt_future is None:
                 kpt_future = torch.zeros(B, chunk_size, j, kpt_dim, device=actions.device, dtype=torch.float32)
@@ -2073,8 +2075,10 @@ class InternVLAA15(nn.Module):
         wan_device = next(self.wan_video_model.wan_model.parameters()).device
         wan_dtype = self.wan_video_model.precision
 
-        # Project learnable tokens to WAN context
-        wan_context = self.learnable_to_wan_proj(learnable_out)
+        # Project learnable tokens to WAN context. DeepSpeed bf16 casts this
+        # linear to bf16 while the caller passes fp32 learnable states.
+        proj_dtype = self.learnable_to_wan_proj.weight.dtype
+        wan_context = self.learnable_to_wan_proj(learnable_out.to(dtype=proj_dtype))
         wan_context = wan_context.to(dtype=wan_dtype, device=wan_device)
 
         # Encode video with frozen VAE: expects [B, C, T, H, W].  The VAE

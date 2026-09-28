@@ -22,7 +22,7 @@ from typing import Any
 import torch
 import multiprocessing as mp
 from accelerate import Accelerator
-from accelerate.utils import send_to_device
+from accelerate.utils import DistributedType, send_to_device
 from termcolor import colored
 from torch.optim import Optimizer
 
@@ -37,11 +37,15 @@ from lerobot.rl.wandb_utils import WandBLogger
 from lerobot.utils.import_utils import register_third_party_plugins
 from lerobot.utils.logging_utils import AverageMeter, MetricsTracker, format_time
 from lerobot.utils.random_utils import set_seed
+from lerobot.datasets.utils import serialize_dict, write_json
+from lerobot.utils.constants import PRETRAINED_MODEL_DIR, TRAINING_STATE_DIR
 from lerobot.utils.train_utils import (
     get_step_checkpoint_dir,
     get_step_identifier,
     load_training_state,
+    load_training_step,
     save_checkpoint,
+    save_training_step,
     update_last_checkpoint,
 )
 from lerobot.utils.utils import (
@@ -100,6 +104,10 @@ def update_policy(
         grad_norm = torch.nn.utils.clip_grad_norm_(
             policy.parameters(), float("inf"), error_if_nonfinite=False
         )
+    # DeepSpeed clips inside the engine and clip_grad_norm_ only reports the norm.
+    # Before the first engine step that norm can be missing.
+    if grad_norm is None:
+        grad_norm = torch.tensor(0.0, device=accelerator.device)
 
     # Optimizer step
     with lock if lock is not None else nullcontext():
@@ -249,7 +257,8 @@ def train(cfg: TrainPipelineConfig, accelerator: Accelerator | None = None):
 
     step = 0  # number of policy updates (forward + backward + optim)
 
-    if cfg.resume:
+    # DeepSpeed optimizer state is sharded and can only be loaded after prepare().
+    if cfg.resume and accelerator.distributed_type != DistributedType.DEEPSPEED:
         step, optimizer, lr_scheduler = load_training_state(cfg.checkpoint_path, optimizer, lr_scheduler)
 
     if cfg.dataset.dist_loading:
@@ -284,6 +293,16 @@ def train(cfg: TrainPipelineConfig, accelerator: Accelerator | None = None):
         policy, optimizer, dataloader, lr_scheduler = accelerator.prepare(
             policy, optimizer, dataloader, lr_scheduler
         )
+
+    if cfg.resume and accelerator.distributed_type == DistributedType.DEEPSPEED:
+        ds_dir = cfg.checkpoint_path / TRAINING_STATE_DIR / "deepspeed"
+        if not ds_dir.is_dir():
+            raise FileNotFoundError(
+                f"DeepSpeed resume expects {ds_dir}. This checkpoint was not saved with USE_DEEPSPEED=1."
+            )
+        accelerator.load_state(str(ds_dir))
+        step = load_training_step(cfg.checkpoint_path / TRAINING_STATE_DIR)
+
     dl_iter = cycle(dataloader)
 
     policy.train()
@@ -381,9 +400,28 @@ def train(cfg: TrainPipelineConfig, accelerator: Accelerator | None = None):
             train_tracker.reset_averages()
 
         if cfg.save_checkpoint and is_saving_step:
-            if is_main_process:
+            checkpoint_dir = get_step_checkpoint_dir(cfg.output_dir, cfg.steps, step)
+            if accelerator.distributed_type == DistributedType.DEEPSPEED:
+                # save_state is collective: every rank must enter it.
+                # Rank 0 also writes pretrained_model/model.safetensors for the existing loader.
+                ds_dir = checkpoint_dir / TRAINING_STATE_DIR / "deepspeed"
+                accelerator.save_state(str(ds_dir))
+                if is_main_process:
+                    logging.info(f"Checkpoint policy after step {step}")
+                    logging.info(colored("Checkpoint saved at:", "cyan", attrs=["bold"]) + f" {checkpoint_dir}")
+                    pretrained_dir = checkpoint_dir / PRETRAINED_MODEL_DIR
+                    accelerator.unwrap_model(policy).save_pretrained(pretrained_dir)
+                    cfg.save_pretrained(pretrained_dir)
+                    if data_stats is not None:
+                        write_json(serialize_dict(data_stats), pretrained_dir / "stats.json")
+                    step_dir = checkpoint_dir / TRAINING_STATE_DIR
+                    step_dir.mkdir(parents=True, exist_ok=True)
+                    save_training_step(step, step_dir)
+                    update_last_checkpoint(checkpoint_dir)
+                    if wandb_logger:
+                        wandb_logger.log_policy(checkpoint_dir)
+            elif is_main_process:
                 logging.info(f"Checkpoint policy after step {step}")
-                checkpoint_dir = get_step_checkpoint_dir(cfg.output_dir, cfg.steps, step)
                 logging.info(colored("Checkpoint saved at:", "cyan", attrs=["bold"]) + f" {checkpoint_dir}")
                 save_checkpoint(
                     checkpoint_dir=checkpoint_dir,

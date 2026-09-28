@@ -3,6 +3,8 @@
 # and two cameras (agentview + wrist). We register each subset separately so per-subset
 # stats.json entries don't collide in the aggregated stats.
 #
+# Camera keys follow OpenVLA / IPEC LeRobot naming: image + wrist_image (not image2).
+#
 # action_mask_spec [6, -1] means: first 6 dims are delta (xyz + rpy), last 1 dim is absolute
 # (binary gripper). Not used at training time here (action_mode is set to "abs" in the launch
 # script, which skips DeltaActionTransformFn), but kept for correctness if someone flips
@@ -16,7 +18,7 @@
       - action
   image_mapping:
     observation.images.image: observation.images.image0
-    observation.images.image2: observation.images.image1
+    observation.images.wrist_image: observation.images.image1
   action_mask_spec: [6, -1]
   action_mode: end_effector
   description: "LIBERO-10 (agentview + wrist cameras, 7D EE delta + gripper)"
@@ -29,7 +31,7 @@
       - action
   image_mapping:
     observation.images.image: observation.images.image0
-    observation.images.image2: observation.images.image1
+    observation.images.wrist_image: observation.images.image1
   action_mask_spec: [6, -1]
   action_mode: end_effector
   description: "LIBERO-goal (agentview + wrist cameras, 7D EE delta + gripper)"
@@ -42,7 +44,7 @@
       - action
   image_mapping:
     observation.images.image: observation.images.image0
-    observation.images.image2: observation.images.image1
+    observation.images.wrist_image: observation.images.image1
   action_mask_spec: [6, -1]
   action_mode: end_effector
   description: "LIBERO-object (agentview + wrist cameras, 7D EE delta + gripper)"
@@ -55,7 +57,22 @@
       - action
   image_mapping:
     observation.images.image: observation.images.image0
-    observation.images.image2: observation.images.image1
+    observation.images.wrist_image: observation.images.image1
   action_mask_spec: [6, -1]
   action_mode: end_effector
   description: "LIBERO-spatial (agentview + wrist cameras, 7D EE delta + gripper)"
+
+# LIBERO-plus mix (single LeRobot dataset from port_libero_plus + GeoP keypoints).
+# Same camera / state / action layout as the four OpenVLA suites above.
+- robot_type: libero_plus
+  feature_mapping:
+    observation.state:
+      - observation.state
+    action:
+      - action
+  image_mapping:
+    observation.images.image: observation.images.image0
+    observation.images.wrist_image: observation.images.image1
+  action_mask_spec: [6, -1]
+  action_mode: end_effector
+  description: "LIBERO-plus mix (agentview + wrist cameras, 7D EE delta + gripper)"

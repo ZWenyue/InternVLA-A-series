@@ -18,7 +18,11 @@ from pathlib import Path
 import mujoco
 import numpy as np
 
-DEFAULT_R_PAD: float = 1.8212722539901733
+# Isotropic position scale. Must equal keypoints_meta.json "bbox_radius" written by
+# util_scripts/setup_libero_geop_rlds.sh (libero_geop_rlds20, shared across the
+# four suites, robot0_base-relative). The older Lift-world radius
+# 1.8212722539901733 does not match this dataset.
+DEFAULT_R_PAD: float = 0.9613106459379196
 
 # Same candidate order as util_scripts/generate_libero_keypoints.py.
 # Lift MJCF uses gripper0_eef; the training XML wrote gripper0_right_eef

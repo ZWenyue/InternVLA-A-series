@@ -116,8 +116,13 @@ def main() -> None:
 
     result = split_dataset(dataset, splits, output_dir=output_dir)
 
+    kpt_meta_src = source / "meta" / "keypoints_meta.json"
     for suite_name, split_ds in result.items():
         patch_robot_type(split_ds.root, suite_name)
+        if kpt_meta_src.is_file():
+            dest_meta = Path(split_ds.root) / "meta" / "keypoints_meta.json"
+            shutil.copy2(kpt_meta_src, dest_meta)
+            logger.info("Copied keypoints_meta.json -> %s", dest_meta)
         logger.info(
             "Created %s: %d episodes, %d frames at %s",
             suite_name,

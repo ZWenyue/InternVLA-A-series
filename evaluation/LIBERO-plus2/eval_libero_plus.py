@@ -22,8 +22,20 @@ import traceback
 from pathlib import Path
 
 import numpy as np
+import torch
 from termcolor import colored
 from tqdm.auto import tqdm
+
+# PyTorch>=2.6 defaults weights_only=True; LIBERO init_state .pt files need full unpickle.
+_torch_load = torch.load
+
+
+def _torch_load_compat(*args, **kwargs):
+    kwargs.setdefault("weights_only", False)
+    return _torch_load(*args, **kwargs)
+
+
+torch.load = _torch_load_compat
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
@@ -79,6 +91,7 @@ def evaluate_task(
     task_id: int | None = None,
     failures_dir: Path | None = None,
     _partial_results: dict | None = None,
+    close_env: bool = False,
 ):
     """Run all episodes for one LIBERO-plus task; returns (successes, task_desc, action_logs)."""
     env, task_description = _get_libero_env(task, LIBERO_ENV_RESOLUTION, args.seed)
@@ -174,7 +187,13 @@ def evaluate_task(
                 )
             action_logs.append(action_log)
 
-    # Don't close env — runs in forked child that exits via os._exit()
+    # Forked EGL children exit via os._exit() and must not tear down GL.
+    # OSMesa runs many tasks in one process (starVLA LIBERO-plus), so close.
+    if close_env:
+        try:
+            env.close()
+        except Exception:
+            LOGGER.warning("env.close() failed for task_id=%s", task_id, exc_info=True)
     return successes, task_description, action_logs
 
 
@@ -203,6 +222,18 @@ def _run_task_in_subprocess(task_id, args, max_steps,
         _signal.signal(_signal.SIGABRT, _sigabrt_handler)
 
         try:
+            # Ensure LIBERO init_state .pt loads under PyTorch>=2.6 (fork inherits
+            # the module-level patch, but re-apply in case of re-import).
+            import torch as _torch
+            if getattr(_torch.load, "__name__", "") != "_torch_load_compat":
+                _orig = _torch.load
+
+                def _compat(*a, **k):
+                    k.setdefault("weights_only", False)
+                    return _orig(*a, **k)
+
+                _torch.load = _compat
+
             from evaluation.LIBERO2.model2libero_interface import LiberoModelClient
             from libero.libero import benchmark
 
@@ -212,6 +243,7 @@ def _run_task_in_subprocess(task_id, args, max_steps,
                 gripper_convention=args.gripper_convention,
                 replan_steps=args.replan_steps,
                 enable_keypoints=args.enable_keypoints,
+                kpt_r_pad=args.kpt_r_pad,
             )
 
             benchmark_dict = benchmark.get_benchmark_dict()
@@ -235,7 +267,7 @@ def _run_task_in_subprocess(task_id, args, max_steps,
             result = {
                 "successes": _partial["successes"] + [False] * (n_ep - n_done),
                 "task_desc": _partial.get("task_desc", video_tag),
-                "error": str(e),
+                "error": repr(e),
                 "traceback": traceback.format_exc(),
             }
         with open(result_path, "w") as f:
@@ -280,6 +312,42 @@ def _load_id2category(task_classification_path: str, suite: str) -> tuple[dict[i
     return id2category, disturb_res
 
 
+def _osmesa_inprocess() -> bool:
+    """OSMesa can open a new env per task in one process (starVLA LIBERO-plus).
+
+    EGL cannot: a second context in the same process SIGABRTs, so those runs
+    still fork once per task.
+    """
+    return os.environ.get("MUJOCO_GL", "").strip().lower() == "osmesa"
+
+
+def _run_task_inprocess(task_id, args, max_steps, video_dir, video_tag, actions_dir,
+                        failures_dir, client, task_suite):
+    """One LIBERO-plus task without fork. Client and benchmark stay alive."""
+    n_ep = args.num_trials_per_task
+    try:
+        task = task_suite.get_task(task_id)
+        initial_states = task_suite.get_task_init_states(task_id)
+        successes, task_desc, action_logs = evaluate_task(
+            task, initial_states, args, client, max_steps,
+            video_dir, video_tag, actions_dir=actions_dir,
+            task_id=task_id, failures_dir=failures_dir,
+            close_env=True,
+        )
+        return {
+            "successes": [bool(s) for s in successes],
+            "task_desc": task_desc,
+            "action_logs": action_logs,
+        }
+    except Exception as e:
+        return {
+            "successes": [False] * n_ep,
+            "task_desc": video_tag,
+            "error": repr(e),
+            "traceback": traceback.format_exc(),
+        }
+
+
 def evaluate_policy(args: argparse.Namespace) -> dict:
     # Read task metadata from JSON only — no LIBERO/robosuite/mujoco imports
     # so the parent process never initialises EGL.
@@ -315,6 +383,25 @@ def evaluate_policy(args: argparse.Namespace) -> dict:
     total_episodes = 0
     total_successes = 0
     failed_tasks: list[dict] = []
+    consecutive_crashes = 0
+
+    inprocess = _osmesa_inprocess()
+    client = None
+    task_suite = None
+    if inprocess:
+        from evaluation.LIBERO2.model2libero_interface import LiberoModelClient
+        from libero.libero import benchmark
+
+        LOGGER.info("OSMesa in-process eval (no fork per task)")
+        client = LiberoModelClient(
+            host=args.host, port=args.port,
+            rotate_images=_rotate_images_from_args(args),
+            gripper_convention=args.gripper_convention,
+            replan_steps=args.replan_steps,
+            enable_keypoints=args.enable_keypoints,
+            kpt_r_pad=args.kpt_r_pad,
+        )
+        task_suite = benchmark.get_benchmark_dict()[args.task_suite_name]()
 
     for task_id in tqdm(range(start_idx, end_idx), desc=f"{args.task_suite_name}[{start_idx}:{end_idx}]"):
         category, clean_name = id2category[task_id + 1]
@@ -322,17 +409,25 @@ def evaluate_policy(args: argparse.Namespace) -> dict:
         if args.categories and category not in args.categories:
             continue
 
-        # B10 FIX: run each task in a forked subprocess to isolate EGL contexts
-        result_path = str(eval_log_dir / f".task_result_{task_id}.json")
-        result = _run_task_in_subprocess(
-            task_id, args, max_steps,
-            video_dir, clean_name, actions_dir, result_path, failures_dir=failures_dir,
-        )
+        if inprocess:
+            result = _run_task_inprocess(
+                task_id, args, max_steps,
+                video_dir, clean_name, actions_dir, failures_dir,
+                client, task_suite,
+            )
+        else:
+            # B10: EGL cannot create a second context in this process.
+            result_path = str(eval_log_dir / f".task_result_{task_id}.json")
+            result = _run_task_in_subprocess(
+                task_id, args, max_steps,
+                video_dir, clean_name, actions_dir, result_path, failures_dir=failures_dir,
+            )
 
         successes = [bool(s) for s in result.get("successes", [False])]
         task_desc = result.get("task_desc", clean_name)
 
-        if result.get("error"):
+        if "error" in result:
+            consecutive_crashes += 1
             LOGGER.error(
                 "task_id=%d [%s] '%s' CRASHED: %s",
                 task_id, category, clean_name, result["error"],
@@ -346,6 +441,13 @@ def evaluate_policy(args: argparse.Namespace) -> dict:
                 "error": result["error"],
                 "seed": args.seed,
             })
+            if 0 < args.max_consecutive_crashes <= consecutive_crashes:
+                raise RuntimeError(
+                    f"{consecutive_crashes} consecutive tasks crashed (last: {result['error']}); "
+                    "aborting shard — likely a broken environment, not a policy failure"
+                )
+        else:
+            consecutive_crashes = 0
 
         n_succ = int(sum(successes))
         disturb_res[category]["total_count"] += len(successes)
@@ -425,7 +527,15 @@ def parse_args() -> argparse.Namespace:
         choices=["libero_native", "openvla", "auto"],
     )
     parser.add_argument("--enable_keypoints", action=argparse.BooleanOptionalAction, default=True)
+    parser.add_argument(
+        "--kpt_r_pad",
+        type=float,
+        default=0.9613106459379196,
+        help="Keypoint position scale. Must match training keypoints_meta.json bbox_radius.",
+    )
     parser.add_argument("--categories", type=str, nargs="*", default=None)
+    parser.add_argument("--max_consecutive_crashes", type=int, default=5,
+                        help="Abort the shard after this many consecutive crashed tasks (<=0 disables).")
     parser.add_argument("--debug", action="store_true")
     return parser.parse_args()
 

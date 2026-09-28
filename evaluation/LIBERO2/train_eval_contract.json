@@ -1,7 +1,13 @@
 {
-  "image_orientation": "raw",
-  "resize_hw": [224, 224],
-  "cameras": ["agentview", "wrist"],
-  "dataset_hint": "/B/Dta/opvla_libero_merged_kpt",
-  "notes": "Training mp4 frames are robosuite raw. Eval must send rotate_images=false for both cameras."
+  "image_orientation": "rot180",
+  "resize_hw": [
+    224,
+    224
+  ],
+  "cameras": [
+    "agentview",
+    "wrist"
+  ],
+  "dataset_hint": "/tmp/DATA/libero_geop_rlds20",
+  "notes": "GeoP RLDS conversion used --no-flip, but those mp4s already have the OpenVLA/lerobot arm-at-top orientation. Live LIBERO/LIBERO-plus agentview is arm-at-bottom (robosuite raw). Eval must send rotate_images=true for both cameras so the policy sees the training orientation."
 }

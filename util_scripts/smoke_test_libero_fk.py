@@ -41,9 +41,12 @@ def main() -> None:
     kpts = fk.compute_batch(qpos[: min(args.max_frames, len(qpos))])
 
     print(f"SMOKE OK: {pq.name}")
+    print(f"  frame: robot0_base-relative")
+    print(f"  bodies: {fk.body_names}")
     print(f"  keypoints shape: {kpts.shape}")
-    print(f"  sample link1 pos: {kpts[0, 0]}")
-    print(f"  sample eef pos:   {kpts[0, -1]}")
+    print(f"  sample link1 pos: {kpts[0, 0, :3]} quat={kpts[0, 0, 3:]}")
+    print(f"  sample eef pos:   {kpts[0, -1, :3]} quat={kpts[0, -1, 3:]}")
+    print(f"  |link1|={np.linalg.norm(kpts[0, 0, :3]):.4f}  |eef|={np.linalg.norm(kpts[0, -1, :3]):.4f}")
 
 
 if __name__ == "__main__":

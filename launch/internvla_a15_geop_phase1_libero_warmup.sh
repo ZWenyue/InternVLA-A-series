@@ -16,8 +16,9 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJ_ROOT="${PROJ_ROOT:-$(cd "${SCRIPT_DIR}/.." && pwd)}"
 
+# HF_HOME: base + GeoPredict ckpts. HF_LEROBOT_HOME: suite roots from setup_libero_geop_rlds.sh
 export HF_HOME="${HF_HOME:-/tmp/zwy}"
-export HF_LEROBOT_HOME="${HF_LEROBOT_HOME:-${HF_HOME}/lerobot}"
+export HF_LEROBOT_HOME="${HF_LEROBOT_HOME:-/tmp/DATA/libero_geop_rlds20}"
 export WANDB_MODE="${WANDB_MODE:-offline}"
 export USE_LIBUV="${USE_LIBUV:-0}"
 export PYTHONUNBUFFERED=1
@@ -130,7 +131,7 @@ if d.get('robot_type') != target:
     print(f'[info-patch] robot_type -> {target} in {p}')
 "
     else
-      echo "[info-patch] WARNING: ${info_json} not found — run setup_libero_geop.sh first"
+      echo "[info-patch] WARNING: ${info_json} not found — run setup_libero_geop_rlds.sh (or set HF_LEROBOT_HOME)"
     fi
   done
 fi

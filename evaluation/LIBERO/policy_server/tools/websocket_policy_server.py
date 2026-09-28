@@ -40,6 +40,9 @@ class WebsocketPolicyServer:
             self._port,
             compression=None,
             max_size=None,
+            # Inference runs synchronously on the event loop; first call compiles kernels.
+            ping_interval=20,
+            ping_timeout=600,
         ) as server:
             if self._idle_timeout > 0:
                 await self._idle_watchdog(server)

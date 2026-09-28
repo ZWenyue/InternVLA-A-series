@@ -8,5 +8,5 @@ feature_mapping:
     - action
 image_mapping:
   observation.images.image: observation.images.image0
-  observation.images.image2: observation.images.image1
+  observation.images.wrist_image: observation.images.image1
 description: "Panda robot (no gripper, all delta action)"

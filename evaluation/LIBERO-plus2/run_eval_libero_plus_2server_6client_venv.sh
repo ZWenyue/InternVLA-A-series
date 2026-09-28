@@ -126,7 +126,7 @@ else
 fi
 
 if [[ -z "${DISABLE_KEYPOINTS}" ]]; then
-    KPT_FLAGS=(--enable_keypoints)
+    KPT_FLAGS=(--enable_keypoints --kpt_r_pad "${KPT_R_PAD:-0.9613106459379196}")
 else
     KPT_FLAGS=(--no-enable_keypoints)
 fi

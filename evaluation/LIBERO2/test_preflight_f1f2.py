@@ -233,9 +233,9 @@ def run_part_a(runner: TestRunner):
     kpt = PROJ / "evaluation/LIBERO2/keypoint_utils.py"
     if kpt.exists():
         src = kpt.read_text()
-        has_r_pad = "1.8212722539901733" in src
+        has_r_pad = "0.9613106459379196" in src
         runner.record("A10", "B9:R_PAD_correct_value", has_r_pad,
-                       "" if has_r_pad else "R_PAD should be 1.8212722539901733")
+                       "" if has_r_pad else "R_PAD should be 0.9613106459379196")
         has_resolve = "def resolve_eef_body_name" in src
         runner.record("A10", "B9:resolve_eef_body_name", has_resolve,
                        "" if has_resolve else "must resolve EEF against the loaded MJCF")
@@ -641,7 +641,7 @@ def run_part_b(runner: TestRunner):
             from evaluation.LIBERO2.keypoint_utils import (
                 DEFAULT_R_PAD, DEFAULT_KEYPOINT_BODIES, _DEFAULT_MJCF_PATH,
             )
-            runner.record("B5", "B9:R_PAD_value", abs(DEFAULT_R_PAD - 1.8212722539901733) < 1e-10,
+            runner.record("B5", "B9:R_PAD_value", abs(DEFAULT_R_PAD - 0.9613106459379196) < 1e-10,
                            f"got {DEFAULT_R_PAD}")
             runner.record("B5", "B9:8_bodies", len(DEFAULT_KEYPOINT_BODIES) == 8,
                            f"got {len(DEFAULT_KEYPOINT_BODIES)}")

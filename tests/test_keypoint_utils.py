@@ -132,7 +132,7 @@ class TestEefCandidates:
         assert DEFAULT_KEYPOINT_BODIES[-1] == "gripper0_eef"
         assert KEYPOINT_DIM == 7
         assert len(KEYPOINT_ARM_BODY_NAMES) == 7
-        assert abs(DEFAULT_R_PAD - 1.8212722539901733) < 1e-10
+        assert abs(DEFAULT_R_PAD - 0.9613106459379196) < 1e-10
 
 
 @pytest.mark.skipif(not _mujoco_available(), reason="mujoco or Lift MJCF missing")

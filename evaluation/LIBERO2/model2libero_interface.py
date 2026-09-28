@@ -1,6 +1,7 @@
 """LIBERO2 model-to-env interface — fixes B1 (gripper convention) + adds keypoint support."""
 from __future__ import annotations
 
+import logging
 import math
 from typing import Any
 
@@ -14,6 +15,8 @@ from evaluation.LIBERO2.keypoint_utils import (
     StandaloneFK,
     _DEFAULT_MJCF_PATH,
 )
+
+_LOGGER = logging.getLogger(__name__)
 
 
 def _quat2axisangle(quat: np.ndarray) -> np.ndarray:
@@ -84,6 +87,10 @@ class LiberoModelClient:
             self._fk = StandaloneFK(
                 mjcf_path=mjcf_path or _DEFAULT_MJCF_PATH,
                 r_pad=kpt_r_pad,
+            )
+            _LOGGER.info(
+                "Keypoint FK R_pad=%.16g (robot0_base-relative; must match training bbox_radius)",
+                kpt_r_pad,
             )
             self._kpt_extractor: KeypointExtractor | None = None
             self._kpt_history = KeypointHistory(max_len=kpt_history_max_len)
