@@ -2,47 +2,40 @@
 set -euo pipefail
 
 ###############################################################################
-# End-to-end LIBERO GeoP data pipeline:
-#   1. Export MountedPanda MJCF from LIBERO-plus
-#   2. Generate observation.keypoint_3d (7D pos+quat) via MuJoCo FK
-#      in robot0_base-relative coordinates (option B)
-#   3. Split merged dataset into 4 LIBERO suites
-#   4. Optionally symlink suites into data/ for training scripts
+# 20 Hz LIBERO GeoP from libero_rlds_lerobot (joints kept, wrist_image kept).
+#
+#   1. Export MountedPanda MJCF (LIBERO-plus) if needed
+#   2. Copy 4 suites -> output, FK keypoints with shared robot0_base R_pad
+#   3. Optionally symlink into data/
 #
 # Usage:
-#   bash util_scripts/setup_libero_geop.sh
+#   bash util_scripts/setup_libero_geop_rlds.sh
+#   FORCE=1 bash util_scripts/setup_libero_geop_rlds.sh
+#   SMOKE=1 bash util_scripts/setup_libero_geop_rlds.sh
 #
-# Environment overrides:
-#   SOURCE_DATASET=/tmp/DATA/libero_lerobot_v3
-#   HF_LEROBOT_HOME=/tmp/DATA/libero_geop
-#   LIBERO_PLUS_ROOT=/home/a26160/SRC/LIBERO-plus
-#   SKIP_MJCF=1          # reuse existing MJCF_PATH
-#   SKIP_KEYPOINTS=1     # reuse libero_merged_kpt
-#   SKIP_SPLIT=1         # reuse 4-suite split
-#   SKIP_SYMLINK=1       # do not create data/ symlinks
-#   SMOKE=1              # FK on first parquet only (fast sanity check)
-#   FORCE=1              # overwrite merged_kpt + re-split suite dirs
+# Env overrides:
+#   SOURCE_ROOT=/tmp/DATA/libero_rlds_lerobot
+#   OUTPUT_DIR=/tmp/DATA/libero_geop_rlds20
+#   MJCF_PATH=/tmp/DATA/panda_libero_plus.xml
+#   SKIP_MJCF=1  SKIP_KEYPOINTS=1  SKIP_SYMLINK=1
+#   FORCE=1  SMOKE=1
 ###############################################################################
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJ_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
-SOURCE_DATASET="${SOURCE_DATASET:-/tmp/DATA/libero_lerobot_v3}"
-HF_LEROBOT_HOME="${HF_LEROBOT_HOME:-/tmp/DATA/libero_geop}"
-MERGED_KPT="${MERGED_KPT:-${HF_LEROBOT_HOME}/libero_merged_kpt}"
+SOURCE_ROOT="${SOURCE_ROOT:-/tmp/DATA/libero_rlds_lerobot}"
+OUTPUT_DIR="${OUTPUT_DIR:-/tmp/DATA/libero_geop_rlds20}"
 MJCF_PATH="${MJCF_PATH:-/tmp/DATA/panda_libero_plus.xml}"
 LIBERO_PLUS_ROOT="${LIBERO_PLUS_ROOT:-/home/a26160/SRC/LIBERO-plus}"
 PYTHON="${PYTHON:-python}"
 
 SKIP_MJCF="${SKIP_MJCF:-0}"
 SKIP_KEYPOINTS="${SKIP_KEYPOINTS:-0}"
-SKIP_SPLIT="${SKIP_SPLIT:-0}"
 SKIP_SYMLINK="${SKIP_SYMLINK:-0}"
 SMOKE="${SMOKE:-0}"
 FORCE="${FORCE:-0}"
 
-# Headless NVIDIA EGL (robosuite/mujoco 2.3.x). Contaminated shell env vars
-# (e.g. PYOPENGL_PLATFORM) break EGL — always launch Python with a clean env.
 export LD_LIBRARY_PATH_EGL="${LD_LIBRARY_PATH_EGL:-/usr/local/nvidia/lib64}"
 export __EGL_VENDOR_LIBRARY_DIRS="${__EGL_VENDOR_LIBRARY_DIRS:-${HOME}/.local/share/glvnd/egl_vendor.d}"
 export MUJOCO_GL="${MUJOCO_GL:-egl}"
@@ -60,115 +53,82 @@ run_py() {
     "${PYTHON}" "$@"
 }
 
-echo "=== LIBERO GeoP Data Setup ==="
-echo "PROJ_ROOT=${PROJ_ROOT}"
-echo "SOURCE_DATASET=${SOURCE_DATASET}"
-echo "HF_LEROBOT_HOME=${HF_LEROBOT_HOME}"
-echo "MERGED_KPT=${MERGED_KPT}"
+echo "=== LIBERO GeoP from RLDS (20 Hz) ==="
+echo "SOURCE_ROOT=${SOURCE_ROOT}"
+echo "OUTPUT_DIR=${OUTPUT_DIR}"
 echo "MJCF_PATH=${MJCF_PATH}"
-echo "LIBERO_PLUS_ROOT=${LIBERO_PLUS_ROOT}"
-echo "SMOKE=${SMOKE}"
 echo "coordinate_system=robot0_base-relative"
+echo "cameras=image + wrist_image (no rename)"
 
-if [[ ! -d "${SOURCE_DATASET}" ]]; then
-  echo "ERROR: SOURCE_DATASET not found: ${SOURCE_DATASET}" >&2
+if [[ ! -d "${SOURCE_ROOT}" ]]; then
+  echo "ERROR: SOURCE_ROOT not found: ${SOURCE_ROOT}" >&2
   exit 1
 fi
 
 cd "${PROJ_ROOT}"
 
-# ── Step 1: Export MountedPanda MJCF ──────────────────────────────────────
 if [[ "${SKIP_MJCF}" != "1" ]]; then
   echo ""
-  echo ">>> Step 1/4: Export LIBERO-plus MountedPanda MJCF"
+  echo ">>> Step 1/3: Export MountedPanda MJCF"
   run_py util_scripts/export_panda_mjcf.py \
     --output "${MJCF_PATH}" \
     --libero-plus "${LIBERO_PLUS_ROOT}"
 else
-  echo ">>> Step 1/4: SKIP (MJCF)"
-  if [[ ! -f "${MJCF_PATH}" ]]; then
-    echo "ERROR: MJCF not found at ${MJCF_PATH}" >&2
-    exit 1
-  fi
+  echo ">>> Step 1/3: SKIP (MJCF)"
+  [[ -f "${MJCF_PATH}" ]] || { echo "ERROR: missing ${MJCF_PATH}" >&2; exit 1; }
 fi
 
-# ── Step 2: Generate keypoints ──────────────────────────────────────────────
+if [[ "${SMOKE}" == "1" ]]; then
+  echo ""
+  echo ">>> SMOKE: FK on libero_spatial only"
+  run_py util_scripts/smoke_test_libero_fk.py \
+    --source "${SOURCE_ROOT}/libero_spatial_no_noops_1.0.0_lerobot" \
+    --xml "${MJCF_PATH}"
+  echo "SMOKE OK. Re-run without SMOKE=1 for full conversion."
+  exit 0
+fi
+
 if [[ "${SKIP_KEYPOINTS}" != "1" ]]; then
   echo ""
-  echo ">>> Step 2/4: Generate observation.keypoint_3d (robot0_base-relative)"
+  echo ">>> Step 2/3: Generate keypoints (shared R_pad, keep wrist_image)"
   KPT_ARGS=(
-    --source "${SOURCE_DATASET}"
-    --dest "${MERGED_KPT}"
+    --source-root "${SOURCE_ROOT}"
+    --output-dir "${OUTPUT_DIR}"
     --xml "${MJCF_PATH}"
   )
   if [[ "${FORCE}" == "1" ]]; then
     KPT_ARGS+=(--force)
   fi
-  if [[ "${SMOKE}" == "1" ]]; then
-    echo "SMOKE mode: testing FK on one parquet file only"
-    run_py util_scripts/smoke_test_libero_fk.py \
-      --source "${SOURCE_DATASET}" \
-      --xml "${MJCF_PATH}"
-    echo "SMOKE FK passed. Run without SMOKE=1 to generate full keypoints."
-    exit 0
-  fi
-  run_py util_scripts/generate_libero_keypoints.py "${KPT_ARGS[@]}"
+  run_py util_scripts/generate_libero_geop_from_rlds.py "${KPT_ARGS[@]}"
 else
-  echo ">>> Step 2/4: SKIP (keypoints)"
-  if [[ ! -d "${MERGED_KPT}" ]]; then
-    echo "ERROR: MERGED_KPT not found: ${MERGED_KPT}" >&2
-    exit 1
-  fi
+  echo ">>> Step 2/3: SKIP (keypoints)"
 fi
 
-# ── Step 3: Split into 4 suites ───────────────────────────────────────────────
-if [[ "${SKIP_SPLIT}" != "1" ]]; then
-  echo ""
-  echo ">>> Step 3/4: Split merged dataset into 4 LIBERO suites"
-  SPLIT_ARGS=(
-    --source "${MERGED_KPT}"
-    --repo-id "local/libero_merged_kpt"
-    --output-dir "${HF_LEROBOT_HOME}"
-  )
-  if [[ "${FORCE}" == "1" ]]; then
-    SPLIT_ARGS+=(--force)
-  fi
-  run_py util_scripts/split_libero_merged.py "${SPLIT_ARGS[@]}"
-else
-  echo ">>> Step 3/4: SKIP (split)"
-fi
-
-# ── Step 4: Symlink into data/ for convenience ────────────────────────────────
 if [[ "${SKIP_SYMLINK}" != "1" ]]; then
   echo ""
-  echo ">>> Step 4/4: Symlink suites into ${PROJ_ROOT}/data/"
+  echo ">>> Step 3/3: Symlink suites into ${PROJ_ROOT}/data/"
   mkdir -p "${PROJ_ROOT}/data"
   for suite in libero_spatial libero_object libero_goal libero_10; do
-    src="${HF_LEROBOT_HOME}/${suite}"
+    src="${OUTPUT_DIR}/${suite}"
     dst="${PROJ_ROOT}/data/${suite}"
     if [[ ! -d "${src}" ]]; then
-      echo "WARNING: ${src} not found, skipping symlink"
+      echo "WARNING: ${src} missing, skip"
       continue
     fi
     if [[ -L "${dst}" || -e "${dst}" ]]; then
-      echo "  ${dst} already exists, skipping"
+      echo "  ${dst} exists, skipping (remove manually to relink to 20 Hz)"
     else
       ln -s "${src}" "${dst}"
       echo "  linked ${dst} -> ${src}"
     fi
   done
 else
-  echo ">>> Step 4/4: SKIP (symlinks)"
+  echo ">>> Step 3/3: SKIP (symlinks)"
 fi
 
 echo ""
-echo "=== Setup complete ==="
-echo "Datasets ready under: ${HF_LEROBOT_HOME}/libero_{spatial,object,goal,10}"
-echo ""
-echo "Next steps:"
-echo "  # Phase 1 warmup"
-echo "  bash launch/internvla_a15_geop_phase1_libero_warmup.sh"
-echo ""
-echo "  # Phase 2 SFT (after warmup)"
-echo "  export WARMUP_CKPT=outputs/internvla_a1_5/<warmup_job>/checkpoints/000400/pretrained_model"
-echo "  bash launch/internvla_a15_finetune_libero_geop.sh"
+echo "=== Done ==="
+echo "20 Hz GeoP suites: ${OUTPUT_DIR}/libero_{spatial,object,goal,10}"
+echo "DATASET_REPO_ID='libero_spatial libero_object libero_goal libero_10'"
+echo "Train with:  export HF_LEROBOT_HOME=${OUTPUT_DIR}"
+echo "  (launch/internvla_a15_geop_phase1_libero_warmup.sh defaults to this path)"
